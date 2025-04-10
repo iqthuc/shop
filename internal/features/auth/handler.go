@@ -2,27 +2,46 @@ package auth
 
 import (
 	"context"
-	"fmt"
+	"encoding/json"
 	"log"
 	"net/http"
+	"shop/pkg/utils"
 )
 
-type UserCase interface {
-	Login(ctx context.Context, email string, password string) error
-}
-
 type handler struct {
-	useCase UserCase
+	useCase UseCase
 }
 
-func NewHandler(useCase UserCase) handler {
+func NewHandler(useCase UseCase) handler {
 	return handler{
 		useCase: useCase,
 	}
 }
 
-func (h handler) Login(w http.ResponseWriter, r *http.Request) {
-	log.Println("login")
-	w.Header().Set("Content-Type", "application/json")
-	fmt.Fprintln(w, "Hello")
+type UseCase interface {
+	SignUp(ctx context.Context, input signUpInput) (signUpResult, error)
+}
+
+func (h handler) SignUp(w http.ResponseWriter, r *http.Request) {
+	var req signUpRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		log.Println(err)
+		utils.ErrorJsonResponse(w, http.StatusBadRequest, utils.ErrorMessages.InvalidRequest)
+		return
+	}
+
+	input := signUpInput{
+		req.Username,
+		req.Email,
+		req.Password,
+	}
+
+	signUpResponse, err := h.useCase.SignUp(r.Context(), input)
+	if err != nil {
+		log.Println(err)
+		utils.ErrorJsonResponse(w, http.StatusInternalServerError, utils.ErrorMessages.SomethingErrors)
+		return
+	}
+
+	utils.SuccessJsonResponse(w, signUpResponse, "signup success")
 }

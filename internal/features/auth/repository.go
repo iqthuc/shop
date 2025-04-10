@@ -1,15 +1,21 @@
 package auth
 
-import "fmt"
+import (
+	"database/sql"
+	"fmt"
+)
 
 type repository struct {
+	db *sql.DB
 }
 
-func NewRepository() repository {
-	return repository{}
+func NewRepository(db *sql.DB) repository {
+	return repository{
+		db: db,
+	}
 }
 
-func (r repository) CreateUser() error {
+func (r repository) CreateUser(user createUserParams) (createUserResult, error) {
 	fmt.Println("Call CreateUser in repository")
-	return nil
+	return createUserResult{}, nil
 }

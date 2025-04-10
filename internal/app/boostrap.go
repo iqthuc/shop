@@ -2,22 +2,15 @@ package app
 
 import (
 	"fmt"
-	"net/http"
-	"shop/internal/config"
+	"shop/internal/infrastructure/config"
 )
 
 func Bootstrap() {
-	cfg, err := config.Load()
+	appConfig, err := config.Load()
 	if err != nil {
 		fmt.Println(err)
 	}
 
-	rootRouter := http.NewServeMux()
-	app := Application{
-		config: cfg,
-		router: rootRouter,
-	}
-
-	fmt.Println("bootstrap")
+	app := NewApp(appConfig)
 	app.Run()
 }
