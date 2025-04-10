@@ -41,6 +41,9 @@ Thiết kế hệ thống đăng nhập/đăng xuất hiện đại, an toàn v�
 | expires_at | TIMESTAMP | |
 | created_at | TIMESTAMP | |
 
+### blacklist (trong Redis)
+
+    blacklist:session:<session_id>
 ---
 
 ## 🔐 Token Design
@@ -64,14 +67,27 @@ Thiết kế hệ thống đăng nhập/đăng xuất hiện đại, an toàn v�
 2. Server xác thực → tạo session
 3. Trả về access_token + refresh_token
 
+### Gửi request kèm access token
+1. Client gửi request
+2. Server verify:
+  - access token hợp lệ
+  - exp còn hiệu lực
+  - user_id khớp
+  - session_id không nằm trong blacklist
+4. nếu valid -> cho qua
+- note: chỉ cần lưu blocklist trong Redis (exp 15p , rủi ro gần như không có)
+
 ### Refresh Token
 1. Client gửi refresh_token
 2. Server xác thực → tạo access_token mới
 
 ### Đăng xuất
 1. Client gửi refresh_token
-2. Server xoá session trong DB
+2. Server thêm access token vào blacklist
+3. Server xoá session trong DB
 
+### Revoke token (dùng để hủy bỏ access token)
+1. Thêm session_id vào blacklist trong redis
 ---
 
 ## 📱 Đăng nhập đa thiết bị
@@ -85,7 +101,7 @@ Thiết kế hệ thống đăng nhập/đăng xuất hiện đại, an toàn v�
 ## 🔐 Bảo mật
 
 - Brute force → rate limiting
-- JWT ngắn hạn
+- JWT ngắn hạn (15 phút)
 - Refresh Token: lưu ở httpOnly cookie hoặc client nhưng mã hoá
 - Rotation token nếu muốn chống reuse
 
