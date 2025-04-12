@@ -1,5 +1,7 @@
 package auth
 
+import "time"
+
 /*
 package auth dùng để làm mẫu, còn theo hay không thì tùy @@
 [Client]
@@ -12,33 +14,30 @@ package auth dùng để làm mẫu, còn theo hay không thì tùy @@
 */
 
 type signUpRequest struct {
-	Username string `json:"username"`
 	Email    string `json:"email"`
 	Password string `json:"password"`
 }
 
 type signUpInput struct {
-	Username string
-	Email    string
-	Password string
+	Email    string `validate:"required,email"`
+	Password string `validate:"required,min=6"`
+}
+type createUserParams struct {
+	email        string
+	passwordHash string
 }
 
-type createUserParams struct {
-	Username string
-	Email    string
-	Password string
-}
 type createUserResult struct {
-	Username string
-	Email    string
+	email     string
+	createdAt time.Time
 }
 
 type signUpResult struct {
-	Username string
-	Email    string
+	email     string
+	createdAt time.Time
 }
 
 type signUpResponse struct {
-	Username string `json:"username"`
-	Email    string `json:"email"`
+	Email     string    `json:"email"`
+	CreatedAt time.Time `json:"created_at"`
 }

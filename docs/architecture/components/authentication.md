@@ -22,10 +22,10 @@ Thiết kế hệ thống đăng nhập/đăng xuất hiện đại, an toàn v�
 | Field | Type | Note |
 |-------|------|------|
 | id | UUID (PK) | |
+| username | TEXT | Unique |
 | email | TEXT | Unique |
 | password_hash | TEXT | Null nếu dùng Google |
-| full_name | TEXT | |
-| avatar_url | TEXT | |
+| role | TEXT | DEFAULT 'user' |
 | created_at | TIMESTAMP | |
 | updated_at | TIMESTAMP | |
 

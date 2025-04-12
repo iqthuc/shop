@@ -3,8 +3,8 @@ package config
 import "fmt"
 
 type Server struct {
-	Host string
-	Port int
+	Host string `mapstructure:"host"`
+	Port int    `mapstructure:"port"`
 }
 
 func (s Server) Address() string {

@@ -1,8 +1,10 @@
-package utils
+package response
 
 import (
 	"encoding/json"
 	"net/http"
+	errs "shop/pkg/utils/errors"
+	"shop/pkg/utils/messages"
 )
 
 type APIResponse struct {
@@ -18,9 +20,9 @@ func JsonResponse(w http.ResponseWriter, response APIResponse) {
 	json.NewEncoder(w).Encode(response)
 }
 
-func ErrorJsonResponse(w http.ResponseWriter, code int, message string) {
+func ErrorJson(w http.ResponseWriter, err errs.AppError, code int) {
 	response := APIResponse{
-		Message: message,
+		Message: err.Error(),
 		Code:    code,
 		Data:    nil,
 		Status:  0,
@@ -28,9 +30,9 @@ func ErrorJsonResponse(w http.ResponseWriter, code int, message string) {
 	JsonResponse(w, response)
 }
 
-func SuccessJsonResponse(w http.ResponseWriter, data any, message string) {
+func SuccessJson(w http.ResponseWriter, data any, message messages.AppMessage) {
 	response := APIResponse{
-		Message: message,
+		Message: string(message),
 		Code:    http.StatusOK,
 		Data:    data,
 		Status:  1,

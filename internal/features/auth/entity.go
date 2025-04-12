@@ -1,7 +1,6 @@
 package auth
 
-type Credentials struct {
-	Username string
-	Email    string
-	Password string
-}
+// type User struct {
+// 	Email    string
+// 	Password string
+// }

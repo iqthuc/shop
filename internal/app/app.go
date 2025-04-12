@@ -2,66 +2,70 @@ package app
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"shop/internal/features/auth"
-	"shop/internal/infrastructure/config"
-	"shop/internal/infrastructure/database"
+	"shop/internal/infrastructure/database/store"
 	"time"
+
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-playground/validator/v10"
 )
 
 // app đại diện cho ứng dụng với tất cả các depencencies
-type Application struct {
+type application struct {
 	// router *http.ServeMux
 	// logger *logger.Logger
-	server *http.Server
-	db     *sql.DB
+	server    *http.Server
+	store     store.Store
+	validator *validator.Validate
 }
 
-func NewApp(config *config.AppConfig) *Application {
-	db, _ := database.NewPostPresDB(config.Database)
-
-	server := &http.Server{
-		Addr: config.Server.Address(),
-	}
-	app := &Application{
-		db:     db,
-		server: server,
-	}
-	return app
-
-}
-
-func (a *Application) Run() {
-	a.startServer()
+func (a *application) run() {
 	a.registerRoutes()
+	a.startServer() // place the end
 }
 
-func (a *Application) registerRoutes() {
-	mainRouter := http.NewServeMux()
-	auth.RegisterRoute(mainRouter, a.db)
+func (a *application) registerRoutes() {
+	r := chi.NewRouter()
+	r.Use(middleware.Logger)
+	a.server.Handler = r
+
+	authModule := auth.NewModule(a.store, a.validator)
+	r.Mount("/auth", authModule.InitRoutes())
 }
 
-func (a *Application) startServer() error {
+func (a *application) startServer() {
 	go func() {
-		fmt.Println("start server at", a.server.Addr)
-		a.server.ListenAndServe()
+		fmt.Println("Start server at", a.server.Addr)
+		err := a.server.ListenAndServe()
+		if err != nil {
+			log.Fatal("Sever startup failed")
+		}
 	}()
 
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, os.Interrupt)
 	<-quit
 	log.Println("Shuting down server")
+	a.cleanup()
+}
+
+func (a *application) cleanup() {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-
 	if err := a.server.Shutdown(ctx); err != nil {
-		return err
+		log.Printf("Shutdown server failed: %v", err)
+	}
+
+	dbCtx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+	if err := a.store.CloseDB(dbCtx); err != nil {
+		log.Printf("Close database failed: %v", err)
 	}
 	log.Println("Server exiting")
-	return nil
 }
