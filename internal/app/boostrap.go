@@ -4,6 +4,11 @@ import (
 	"log/slog"
 	"os"
 	"shop/internal/infrastructure/config"
+	"shop/internal/infrastructure/database/store"
+	"shop/internal/infrastructure/logger"
+	"shop/internal/infrastructure/server"
+
+	"github.com/go-playground/validator/v10"
 )
 
 func Bootstrap() {
@@ -15,14 +20,15 @@ func Bootstrap() {
 	}
 	appConfig = loadConfig("configs", "config.dev", "yaml")
 
-	_ = NewLogger(appConfig.Logger)
+	logger.ConfigureLogger(appConfig.Logger)
 	slog.Info("Application running...", slog.String("env", env))
 
-	srv := newServer(appConfig.Server)
-	store := newStore(appConfig.Database)
-	validator := newValidator()
+	server := server.New(appConfig.Server)
+	store := store.New(appConfig.Database)
+	validator := validator.New()
+
 	app := &application{
-		server:    srv,
+		server:    server,
 		store:     store,
 		validator: validator,
 	}

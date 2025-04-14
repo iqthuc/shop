@@ -1,10 +1,10 @@
 package response
 
 import (
-	"encoding/json"
-	"net/http"
 	errs "shop/pkg/utils/errors"
 	"shop/pkg/utils/messages"
+
+	"github.com/gofiber/fiber/v2"
 )
 
 type APIResponse struct {
@@ -14,28 +14,26 @@ type APIResponse struct {
 	Status  int    `json:"status"`
 }
 
-func JsonResponse(w http.ResponseWriter, response APIResponse) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(response.Code)
-	json.NewEncoder(w).Encode(response)
+func JsonResponse(c *fiber.Ctx, response APIResponse) error {
+	return c.Status(response.Code).JSON(response)
 }
 
-func ErrorJson(w http.ResponseWriter, err errs.AppError, code int) {
+func ErrorJson(c *fiber.Ctx, err errs.AppError, code int) error {
 	response := APIResponse{
 		Message: err.Error(),
 		Code:    code,
 		Data:    nil,
 		Status:  0,
 	}
-	JsonResponse(w, response)
+	return JsonResponse(c, response)
 }
 
-func SuccessJson(w http.ResponseWriter, data any, message messages.AppMessage) {
+func SuccessJson(c *fiber.Ctx, data any, message messages.AppMessage) error {
 	response := APIResponse{
 		Message: string(message),
-		Code:    http.StatusOK,
+		Code:    fiber.StatusOK,
 		Data:    data,
 		Status:  1,
 	}
-	JsonResponse(w, response)
+	return JsonResponse(c, response)
 }

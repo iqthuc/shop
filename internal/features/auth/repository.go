@@ -28,6 +28,7 @@ func (r repository) CreateUser(u createUserParams) (*createUserResult, error) {
 		},
 	}
 	user, err := r.store.CreateUser(context.Background(), params)
+	// TODO: check loi duplicate
 	if err != nil {
 		return nil, fmt.Errorf("db query failed: %w", err)
 	}
