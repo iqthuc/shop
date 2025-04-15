@@ -13,6 +13,7 @@ import (
 
 type UseCase interface {
 	SignUp(ctx context.Context, input signUpInput) (*signUpResult, error)
+	Login(ctx context.Context, input loginRequest) (*loginResponse, error)
 }
 
 type handler struct {
@@ -25,27 +26,40 @@ func NewHandler(useCase UseCase) handler {
 	}
 }
 
+func (h handler) Login(c *fiber.Ctx) error {
+	var req loginRequest
+	if err := c.BodyParser(&req); err != nil {
+		return response.ErrorJson(c, errs.ErrInvalidRequest, fiber.StatusBadRequest)
+	}
+
+	result, err := h.useCase.Login(c.Context(), req)
+	if err != nil {
+		slog.Error("login failed", slog.String("error", err.Error()))
+		return response.ErrorJson(c, errs.ErrSomethingWrong, fiber.StatusInternalServerError)
+	}
+
+	slog.Info("user login", slog.String("user", result.UserID.String()))
+
+	return response.SuccessJson(c, result, messages.LoginSuccess)
+}
+
 func (h handler) SignUp(c *fiber.Ctx) error {
 	var req signUpRequest
 	if err := c.BodyParser(&req); err != nil {
-		return response.ErrorJson(c, errs.InvalidRequest, fiber.StatusBadRequest)
+		return response.ErrorJson(c, errs.ErrInvalidRequest, fiber.StatusBadRequest)
 	}
-	input := signUpInput{
-		Email:    req.Email,
-		Password: req.Password,
-	}
+
+	input := signUpInput(req)
 	result, err := h.useCase.SignUp(c.Context(), input)
 	if err != nil {
+		slog.Error("signup failed something", slog.String("details", err.Error()))
 		switch {
-		case errors.Is(err, errs.VaidationFailed):
-			return response.ErrorJson(c, err, fiber.StatusBadRequest)
-
-		case errors.Is(err, errs.EmailAlready):
-			return response.ErrorJson(c, err, fiber.StatusBadRequest)
-
+		case errors.Is(err, errs.ErrVaidationFailed):
+			return response.ErrorJson(c, errs.ErrVaidationFailed, fiber.StatusBadRequest)
+		case errors.Is(err, errs.ErrEmailAlready):
+			return response.ErrorJson(c, errs.ErrEmailAlready, fiber.StatusBadRequest)
 		default:
-			slog.Error("signup failed something", slog.String("details", err.Error()))
-			return response.ErrorJson(c, errs.SomethingWrong, fiber.StatusInternalServerError)
+			return response.ErrorJson(c, errs.ErrSomethingWrong, fiber.StatusInternalServerError)
 		}
 	}
 
@@ -53,5 +67,8 @@ func (h handler) SignUp(c *fiber.Ctx) error {
 		Email:     result.email,
 		CreatedAt: result.createdAt,
 	}
+
+	slog.Info("sign up success")
+
 	return response.SuccessJson(c, resp, messages.SignUpSuccess)
 }

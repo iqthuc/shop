@@ -23,5 +23,6 @@ func (db *Database) DataSourceName() string {
 		Path:     "/" + db.DBName,
 		RawQuery: "sslmode=" + db.SSLMode,
 	}
+
 	return u.String()
 }

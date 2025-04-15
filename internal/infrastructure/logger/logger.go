@@ -34,10 +34,12 @@ func ConfigureLogger(cfg *config.Logger) *slog.Logger {
 			if a.Key == "password" || a.Key == "token" {
 				return slog.Attr{Key: a.Key, Value: slog.StringValue("[REDACTED]")}
 			}
+
 			return a
 		},
 		AddSource: level > slog.LevelInfo,
 	}
+
 	var handler slog.Handler
 	if cfg.Environment == "production" {
 		handler = slog.NewJSONHandler(os.Stdout, prodOpts)
@@ -53,5 +55,6 @@ func ConfigureLogger(cfg *config.Logger) *slog.Logger {
 	slog.Info("Using log format", slog.String("format", cfg.Format))
 	slog.Info("Logger initialized successfully", slog.String("log_level", cfg.Level))
 	slog.Debug("This is a debug message (will only show if log level is Debug)")
+
 	return logger
 }

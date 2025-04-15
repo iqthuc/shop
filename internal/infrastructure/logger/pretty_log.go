@@ -47,6 +47,24 @@ type Handler struct {
 	addSource bool
 }
 
+func NewPrettyHandler(opts *slog.HandlerOptions) *Handler {
+	if opts == nil {
+		opts = &slog.HandlerOptions{}
+	}
+	b := &bytes.Buffer{}
+
+	return &Handler{
+		addSource: opts.AddSource,
+		b:         b,
+		h: slog.NewJSONHandler(b, &slog.HandlerOptions{
+			Level: opts.Level,
+			// AddSource:   opts.AddSource,
+			ReplaceAttr: suppressDefaults(opts.ReplaceAttr),
+		}),
+		m: &sync.Mutex{},
+	}
+}
+
 func (h *Handler) Enabled(ctx context.Context, level slog.Level) bool {
 	return h.h.Enabled(ctx, level)
 }
@@ -59,7 +77,7 @@ func (h *Handler) WithGroup(name string) slog.Handler {
 	return &Handler{h: h.h.WithGroup(name), b: h.b, m: h.m}
 }
 
-// custom lại thông tin source hiển thị
+// custom lại thông tin source hiển thị.
 func getSource(skip int) string {
 	_, file, line, ok := runtime.Caller(skip)
 	if !ok {
@@ -75,7 +93,8 @@ func getSource(skip int) string {
 
 func (h *Handler) Handle(ctx context.Context, r slog.Record) error {
 	if h.addSource {
-		r.AddAttrs(slog.String("source", getSource(4)))
+		depth := 4
+		r.AddAttrs(slog.String("source", getSource(depth)))
 	}
 
 	level := r.Level.String() + ":"
@@ -106,6 +125,7 @@ func (h *Handler) Handle(ctx context.Context, r slog.Record) error {
 		colorize(white, r.Message),
 		colorize(darkGray, string(bytes)),
 	)
+
 	return nil
 }
 
@@ -127,24 +147,8 @@ func (h *Handler) computeAttrs(
 	if err != nil {
 		return nil, fmt.Errorf("error when unmarshaling inner handler's Handle result: %w", err)
 	}
-	return attrs, nil
-}
 
-func NewPrettyHandler(opts *slog.HandlerOptions) *Handler {
-	if opts == nil {
-		opts = &slog.HandlerOptions{}
-	}
-	b := &bytes.Buffer{}
-	return &Handler{
-		addSource: opts.AddSource,
-		b:         b,
-		h: slog.NewJSONHandler(b, &slog.HandlerOptions{
-			Level: opts.Level,
-			// AddSource:   opts.AddSource,
-			ReplaceAttr: suppressDefaults(opts.ReplaceAttr),
-		}),
-		m: &sync.Mutex{},
-	}
+	return attrs, nil
 }
 
 func suppressDefaults(next func([]string, slog.Attr) slog.Attr) func([]string, slog.Attr) slog.Attr {
@@ -157,6 +161,7 @@ func suppressDefaults(next func([]string, slog.Attr) slog.Attr) func([]string, s
 		if next == nil {
 			return a
 		}
+
 		return next(groups, a)
 	}
 }

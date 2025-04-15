@@ -1,6 +1,6 @@
--- name: GetUser :one
+-- name: GetUserByEmail :one
 SELECT * FROM users
-WHERE id = $1 LIMIT 1;
+WHERE email = $1 LIMIT 1;
 
 -- name: CreateUser :one
 INSERT INTO users (username, email, password_hash)

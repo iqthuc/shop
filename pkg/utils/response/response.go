@@ -25,6 +25,7 @@ func ErrorJson(c *fiber.Ctx, err errs.AppError, code int) error {
 		Data:    nil,
 		Status:  0,
 	}
+
 	return JsonResponse(c, response)
 }
 
@@ -35,5 +36,6 @@ func SuccessJson(c *fiber.Ctx, data any, message messages.AppMessage) error {
 		Data:    data,
 		Status:  1,
 	}
+
 	return JsonResponse(c, response)
 }

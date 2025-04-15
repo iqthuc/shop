@@ -1,6 +1,10 @@
 package auth
 
-import "time"
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
 
 /*
 package auth dùng để làm mẫu, còn theo hay không thì tùy @@
@@ -40,4 +44,17 @@ type signUpResult struct {
 type signUpResponse struct {
 	Email     string    `json:"email"`
 	CreatedAt time.Time `json:"created_at"`
+}
+
+// // login.
+type loginRequest struct {
+	Email    string `validate:"required,email"`
+	Password string `validate:"required,min=6"`
+}
+type loginResponse struct {
+	AccessToken  string    `json:"access_token"`
+	RefreshToken string    `json:"refresh_token"`
+	ExpiresIn    int       `json:"expires_in"`
+	TokenType    string    `json:"token_type"`
+	UserID       uuid.UUID `json:"user_id"`
 }

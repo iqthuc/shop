@@ -1,8 +1,5 @@
 package store
 
-// package này nên đặt trong foldler db
-// nhưng đặt đây cho dễ sửa/xóa
-// vì folder db được auto generate
 import (
 	"context"
 	"log"
@@ -26,10 +23,12 @@ func New(cfg *config.Database) Store {
 	if err != nil {
 		log.Panicf("cannot open postgresql: %s ", err)
 	}
+
 	store := &PostgresStore{
 		conn:    conn,
 		Queries: db.New(conn),
 	}
+
 	return store
 }
 

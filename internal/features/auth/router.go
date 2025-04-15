@@ -14,4 +14,5 @@ func RegisterRoutes(r fiber.Router, s store.Store, v validator.Validate) {
 
 	auth := r.Group("/auth")
 	auth.Get("/sign-up", handler.SignUp)
+	auth.Get("/login", handler.Login)
 }

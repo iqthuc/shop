@@ -8,22 +8,24 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
-// AppError để đảm bảo chỉ trả về những error này cho người dùng
+// AppError để đảm bảo chỉ trả về những error này cho người dùng.
 type AppError error
 
 var (
-	InvalidRequest  AppError = errors.New("Invalid request.")
-	VaidationFailed AppError = errors.New("Validation failed.")
-	EmailAlready    AppError = errors.New("Email already exists.")
-	SomethingWrong  AppError = errors.New("Something wrong.")
-	SignUpFailed    AppError = errors.New("Sign up failed.")
+	ErrInvalidRequest      AppError = errors.New("invalid request")
+	ErrVaidationFailed     AppError = errors.New("validation failed")
+	ErrEmailAlready        AppError = errors.New("email already exists")
+	ErrDatabaseQueryFailed AppError = errors.New("database query failed")
+	ErrSomethingWrong      AppError = errors.New("something wrong")
+	ErrSignUpFailed        AppError = errors.New("sign up failed")
 )
 
 func WrapValidationFailed(err error) error {
 	if _, ok := err.(validator.ValidationErrors); ok {
 		return fmt.Errorf("%w", err)
 	}
-	return VaidationFailed
+
+	return ErrVaidationFailed
 }
 
 func PrettyValidationErrors(err error) error {
