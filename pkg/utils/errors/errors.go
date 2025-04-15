@@ -13,11 +13,15 @@ type AppError error
 
 var (
 	ErrInvalidRequest      AppError = errors.New("invalid request")
-	ErrVaidationFailed     AppError = errors.New("validation failed")
+	ErrValidationFailed    AppError = errors.New("validation failed")
 	ErrEmailAlready        AppError = errors.New("email already exists")
 	ErrDatabaseQueryFailed AppError = errors.New("database query failed")
 	ErrSomethingWrong      AppError = errors.New("something wrong")
 	ErrSignUpFailed        AppError = errors.New("sign up failed")
+
+	ErrPasswordNotMatch AppError = errors.New("password is not match")
+	//token
+	ErrInvalidToken AppError = errors.New("token is invalid")
 )
 
 func WrapValidationFailed(err error) error {
@@ -25,7 +29,7 @@ func WrapValidationFailed(err error) error {
 		return fmt.Errorf("%w", err)
 	}
 
-	return ErrVaidationFailed
+	return ErrValidationFailed
 }
 
 func PrettyValidationErrors(err error) error {

@@ -38,7 +38,7 @@ func (h handler) Login(c *fiber.Ctx) error {
 		return response.ErrorJson(c, errs.ErrSomethingWrong, fiber.StatusInternalServerError)
 	}
 
-	slog.Info("user login", slog.String("user", result.UserID.String()))
+	slog.Info("user login", slog.String("user", result.AccessToken))
 
 	return response.SuccessJson(c, result, messages.LoginSuccess)
 }
@@ -54,8 +54,8 @@ func (h handler) SignUp(c *fiber.Ctx) error {
 	if err != nil {
 		slog.Error("signup failed something", slog.String("details", err.Error()))
 		switch {
-		case errors.Is(err, errs.ErrVaidationFailed):
-			return response.ErrorJson(c, errs.ErrVaidationFailed, fiber.StatusBadRequest)
+		case errors.Is(err, errs.ErrValidationFailed):
+			return response.ErrorJson(c, errs.ErrValidationFailed, fiber.StatusBadRequest)
 		case errors.Is(err, errs.ErrEmailAlready):
 			return response.ErrorJson(c, errs.ErrEmailAlready, fiber.StatusBadRequest)
 		default:

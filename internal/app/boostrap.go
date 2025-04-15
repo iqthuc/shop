@@ -7,6 +7,7 @@ import (
 	"shop/internal/infrastructure/database/store"
 	"shop/internal/infrastructure/logger"
 	"shop/internal/infrastructure/server"
+	"shop/pkg/token"
 
 	"github.com/go-playground/validator/v10"
 )
@@ -26,11 +27,13 @@ func Bootstrap() {
 	server := server.New(appConfig.Server)
 	store := store.New(appConfig.Database)
 	validator := validator.New()
+	tkMaker := token.NewJWTMaker(appConfig.Token.SecretKey)
 
 	app := &application{
-		server:    server,
-		store:     store,
-		validator: validator,
+		server:     server,
+		store:      store,
+		validator:  validator,
+		tokenMaker: &tkMaker,
 	}
 	app.run()
 }

@@ -3,8 +3,10 @@ package auth
 import (
 	"context"
 	"log/slog"
-	"shop/pkg/utils"
+	"shop/pkg/token"
 	errs "shop/pkg/utils/errors"
+	"shop/pkg/utils/password"
+	"time"
 
 	"github.com/go-playground/validator/v10"
 )
@@ -15,19 +17,21 @@ type Repository interface {
 }
 
 type useCase struct {
-	repo      Repository
-	validator validator.Validate
+	repo       Repository
+	validator  validator.Validate
+	tokenMaker token.TokenMaker
 }
 
-func NewUsecase(repo Repository, v validator.Validate) useCase {
+func NewUseCase(repo Repository, v validator.Validate, tk token.TokenMaker) useCase {
 	return useCase{
-		repo:      repo,
-		validator: v,
+		repo:       repo,
+		validator:  v,
+		tokenMaker: tk,
 	}
 }
 func (u useCase) Login(ctx context.Context, input loginRequest) (*loginResponse, error) {
 	if err := u.validator.Struct(input); err != nil {
-		return nil, errs.ErrVaidationFailed
+		return nil, errs.ErrValidationFailed
 	}
 
 	user, err := u.repo.GetUser(ctx, input)
@@ -35,20 +39,35 @@ func (u useCase) Login(ctx context.Context, input loginRequest) (*loginResponse,
 		slog.Debug("get user by email failed", slog.String("error", err.Error()))
 		return nil, err
 	}
+	slog.Debug("check password", slog.String("password", user.password))
 
-	result := &loginResponse{
-		UserID: user.id,
+	if !password.CheckPasswordHash(input.Password, user.password) {
+		slog.Info("check password")
+		return nil, errs.ErrPasswordNotMatch
 	}
 
-	return result, nil
+	const accessTokenLifetime = 15 * time.Minute
+	accessToken, err := u.tokenMaker.CreateAccessToken(user.id.String(), user.role, token.Access, accessTokenLifetime)
+	if err != nil {
+		slog.Debug("create access token failed", slog.String("error", err.Error()))
+
+		return nil, err
+	}
+
+	result := loginResponse{
+		UserID:      user.id,
+		AccessToken: accessToken,
+	}
+
+	return &result, nil
 }
 
 func (u useCase) SignUp(ctx context.Context, input signUpInput) (*signUpResult, error) {
 	if err := u.validator.Struct(input); err != nil {
-		return nil, errs.ErrVaidationFailed
+		return nil, errs.ErrValidationFailed
 	}
 
-	passwordHash, err := utils.HashPassword(input.Password)
+	passwordHash, err := password.HashPassword(input.Password)
 	if err != nil {
 		slog.Debug("failed to hash password", slog.String("error", err.Error()))
 		return nil, err

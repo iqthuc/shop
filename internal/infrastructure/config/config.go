@@ -5,5 +5,6 @@ type AppConfig struct {
 	Logger   *Logger   `mapstructure:"logger"`
 	Database *Database `mapstructure:"database"`
 	Server   *Server   `mapstructure:"server"`
+	Token    *Token    `mapstructure:"token"`
 	// Logger   LoggerConfig
 }

@@ -9,6 +9,7 @@ import (
 	"shop/internal/features/auth"
 	"shop/internal/infrastructure/database/store"
 	"shop/internal/infrastructure/server"
+	"shop/pkg/token"
 	"time"
 
 	"github.com/go-playground/validator/v10"
@@ -19,9 +20,10 @@ import (
 type application struct {
 	// router *http.ServeMux
 	// logger *logger.Logger
-	server    *server.Server
-	store     store.Store
-	validator *validator.Validate
+	server     *server.Server
+	store      store.Store
+	validator  *validator.Validate
+	tokenMaker *token.TokenMaker
 }
 
 func (a *application) run() {
@@ -31,7 +33,7 @@ func (a *application) run() {
 
 func (a *application) registerRoutes() {
 	a.server.Fiber.Use(logger.New())
-	auth.RegisterRoutes(a.server.Fiber, a.store, *a.validator)
+	auth.RegisterRoutes(a.server.Fiber, a.store, *a.validator, *a.tokenMaker)
 }
 
 func (a *application) startServer() {
