@@ -1,0 +1,24 @@
+database:
+  driver: postgres
+  host: localhost
+  port: 5432
+  username: root
+  password: root
+  dbname: good-name
+  sslmode: disable
+  max_open_conns: 10
+  max_idle_conns: 5
+  conn_max_lifetime: 1h
+
+server:
+  host: localhost
+  port: 3000
+
+logger:
+  Environment: dev
+  Level: debug
+  Format: json
+  AddSource: true
+
+token:
+  secret_key: 01234567890123456789012345678901

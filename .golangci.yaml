@@ -4,6 +4,8 @@ linters:
   disable:
     - depguard
     - wsl
+    - testpackage
+    - tagalign
   settings:
     nlreturn:
       block-size: 2

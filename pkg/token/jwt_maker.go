@@ -16,12 +16,12 @@ func NewJWTMaker(secretKey string) TokenMaker {
 		secretKey: secretKey,
 	}
 }
-func (maker JWTMaker) CreateAccessToken(userID, role string, tokenType TokenType, duration time.Duration) (string, error) {
+func (maker JWTMaker) CreateToken(userID, role string, tokenRole TokenRole, duration time.Duration) (string, error) {
 	now := time.Now()
 	claims := TokenClaims{
-		UserID: userID,
-		Role:   role,
-
+		UserID:    userID,
+		Role:      role,
+		TokenType: tokenRole,
 		StandardClaims: jwt.StandardClaims{
 			IssuedAt:  now.Unix(),
 			ExpiresAt: now.Add(duration).Unix(),
@@ -30,10 +30,10 @@ func (maker JWTMaker) CreateAccessToken(userID, role string, tokenType TokenType
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
-	return token.SignedString(maker.secretKey)
+	return token.SignedString([]byte(maker.secretKey))
 }
 
-func (maker JWTMaker) VerifyAccessToken(token string) (*TokenClaims, error) {
+func (maker JWTMaker) VerifyToken(token string) (*TokenClaims, error) {
 	keyFunc := func(token *jwt.Token) (any, error) {
 		_, ok := token.Method.(*jwt.SigningMethodHMAC)
 		if !ok {

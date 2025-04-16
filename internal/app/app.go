@@ -16,10 +16,7 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/logger"
 )
 
-// app đại diện cho ứng dụng với tất cả các dependencies.
 type application struct {
-	// router *http.ServeMux
-	// logger *logger.Logger
 	server     *server.Server
 	store      store.Store
 	validator  *validator.Validate
@@ -33,7 +30,7 @@ func (a *application) run() {
 
 func (a *application) registerRoutes() {
 	a.server.Fiber.Use(logger.New())
-	auth.RegisterRoutes(a.server.Fiber, a.store, *a.validator, *a.tokenMaker)
+	auth.SetupModule(a.server.Fiber, a.store, *a.validator, *a.tokenMaker)
 }
 
 func (a *application) startServer() {
@@ -49,7 +46,7 @@ func (a *application) startServer() {
 }
 
 func (a *application) cleanup() {
-	// releases resources before the app exits
+	// releases resources before the app exits.
 	const serverShutdownTimeout = 5 * time.Second
 	ctx, cancel := context.WithTimeout(context.Background(), serverShutdownTimeout)
 	defer cancel()

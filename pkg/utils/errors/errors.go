@@ -20,8 +20,11 @@ var (
 	ErrSignUpFailed        AppError = errors.New("sign up failed")
 
 	ErrPasswordNotMatch AppError = errors.New("password is not match")
-	//token
-	ErrInvalidToken AppError = errors.New("token is invalid")
+
+	// token.
+	ErrInvalidToken         AppError = errors.New("token is invalid")
+	ErrRefreshTokenNotFound AppError = errors.New("refresh token not found")
+	ErrInvalidRefreshToken  AppError = errors.New("refresh token is invalid")
 )
 
 func WrapValidationFailed(err error) error {

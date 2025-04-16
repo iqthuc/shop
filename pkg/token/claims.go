@@ -4,16 +4,16 @@ import (
 	"github.com/golang-jwt/jwt"
 )
 
-type TokenType int
+type TokenRole int
 
 const (
-	Access TokenType = iota
+	Access TokenRole = iota
 	Refresh
 )
 
 type TokenClaims struct {
 	UserID    string    `json:"user_id"`
 	Role      string    `json:"role,omitempty"`
-	TokenType TokenType `json:"type"`
+	TokenType TokenRole `json:"type"`
 	jwt.StandardClaims
 }

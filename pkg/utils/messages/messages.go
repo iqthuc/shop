@@ -4,6 +4,8 @@ package messages
 type AppMessage string
 
 const (
-	SignUpSuccess AppMessage = "Sign up success"
-	LoginSuccess  AppMessage = "Login success"
+	SignUpSuccess  AppMessage = "sign up success"
+	LoginSuccess   AppMessage = "login success"
+	LogoutSuccess  AppMessage = "logout success"
+	RefreshSuccess AppMessage = "refresh token success"
 )

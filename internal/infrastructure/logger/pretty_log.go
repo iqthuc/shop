@@ -41,24 +41,25 @@ func colorize(colorCode int, v string) string {
 }
 
 type Handler struct {
-	h         slog.Handler
-	b         *bytes.Buffer
-	m         *sync.Mutex
-	addSource bool
+	h                 slog.Handler
+	b                 *bytes.Buffer
+	m                 *sync.Mutex
+	addSource         bool
+	disableSourceInfo bool // disable AddSource for info logs ?
 }
 
-func NewPrettyHandler(opts *slog.HandlerOptions) *Handler {
+func NewPrettyHandler(opts *slog.HandlerOptions, disableSourceInfo bool) *Handler {
 	if opts == nil {
 		opts = &slog.HandlerOptions{}
 	}
 	b := &bytes.Buffer{}
 
 	return &Handler{
-		addSource: opts.AddSource,
-		b:         b,
+		addSource:         opts.AddSource,
+		disableSourceInfo: disableSourceInfo,
+		b:                 b,
 		h: slog.NewJSONHandler(b, &slog.HandlerOptions{
-			Level: opts.Level,
-			// AddSource:   opts.AddSource,
+			Level:       opts.Level,
 			ReplaceAttr: suppressDefaults(opts.ReplaceAttr),
 		}),
 		m: &sync.Mutex{},
@@ -77,14 +78,14 @@ func (h *Handler) WithGroup(name string) slog.Handler {
 	return &Handler{h: h.h.WithGroup(name), b: h.b, m: h.m}
 }
 
-// custom lại thông tin source hiển thị.
+// custom "source" attribute.
 func getSource(skip int) string {
 	_, file, line, ok := runtime.Caller(skip)
 	if !ok {
 		return "???:0"
 	}
 
-	// lấy folder cha cuối cùng + tên file
+	// get last folder + filename
 	dir, filename := filepath.Split(file)
 	parent := filepath.Base(filepath.Clean(dir))
 
@@ -93,8 +94,10 @@ func getSource(skip int) string {
 
 func (h *Handler) Handle(ctx context.Context, r slog.Record) error {
 	if h.addSource {
-		depth := 4
-		r.AddAttrs(slog.String("source", getSource(depth)))
+		if !(h.disableSourceInfo && r.Level == slog.LevelInfo) {
+			depth := 4
+			r.AddAttrs(slog.String("source", getSource(depth)))
+		}
 	}
 
 	level := r.Level.String() + ":"

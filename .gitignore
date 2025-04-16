@@ -1,2 +1,4 @@
 tmp/*
-configs/*.yaml
+configs/*
+!configs/config.example.yaml
+dev.env

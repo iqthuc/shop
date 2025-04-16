@@ -48,7 +48,9 @@ func ConfigureLogger(cfg *config.Logger) *slog.Logger {
 			Level:       slog.LevelDebug,
 			ReplaceAttr: nil,
 			AddSource:   true,
-		})
+		},
+			true, // disable AddSource for Info log?
+		)
 	}
 	logger := slog.New(handler)
 	slog.SetDefault(logger)
