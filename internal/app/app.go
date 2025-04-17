@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/signal"
 	"shop/internal/features/auth"
+	"shop/internal/features/product"
 	"shop/internal/infrastructure/database/store"
 	"shop/internal/infrastructure/server"
 	"shop/pkg/token"
@@ -31,6 +32,7 @@ func (a *application) run() {
 func (a *application) registerRoutes() {
 	a.server.Fiber.Use(logger.New())
 	auth.SetupModule(a.server.Fiber, a.store, *a.validator, *a.tokenMaker)
+	product.SetupModule(a.server.Fiber, a.store, *a.validator)
 }
 
 func (a *application) startServer() {

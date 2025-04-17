@@ -25,6 +25,9 @@ var (
 	ErrInvalidToken         AppError = errors.New("token is invalid")
 	ErrRefreshTokenNotFound AppError = errors.New("refresh token not found")
 	ErrInvalidRefreshToken  AppError = errors.New("refresh token is invalid")
+
+	//products.
+	ErrGetProductsFailed AppError = errors.New("failed to get products")
 )
 
 func WrapValidationFailed(err error) error {

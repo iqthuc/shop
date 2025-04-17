@@ -8,4 +8,7 @@ const (
 	LoginSuccess   AppMessage = "login success"
 	LogoutSuccess  AppMessage = "logout success"
 	RefreshSuccess AppMessage = "refresh token success"
+
+	// product.
+	GetProductsSuccess AppMessage = "get product success"
 )
