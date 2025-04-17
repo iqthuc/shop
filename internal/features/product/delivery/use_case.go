@@ -7,5 +7,13 @@ import (
 )
 
 type UseCase interface {
-	GetProducts(ctx context.Context, input dto.GetProductsRequest) (*dto.GetProductsResult[entity.Product], error)
+	GetProducts(
+		ctx context.Context,
+		input dto.GetProductsRequest,
+	) (*dto.GetProductsResult[entity.Product], error)
+
+	GetProductDetail(
+		ctx context.Context,
+		productID int,
+	) (*dto.GetProductDetailResult, error)
 }

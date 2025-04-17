@@ -8,6 +8,17 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+type ProductVariant struct {
+	ID            int32          `json:"id"`
+	ProductID     pgtype.Int4    `json:"product_id"`
+	Sku           string         `json:"sku"`
+	Price         pgtype.Numeric `json:"price"`
+	StockQuantity int32          `json:"stock_quantity"`
+	Sold          int32          `json:"sold"`
+	ImageUrl      pgtype.Text    `json:"image_url"`
+	IsDefault     bool           `json:"is_default"`
+}
+
 type User struct {
 	ID           pgtype.UUID      `json:"id"`
 	Username     pgtype.Text      `json:"username"`

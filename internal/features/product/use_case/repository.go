@@ -8,4 +8,6 @@ import (
 
 type repository interface {
 	FetchProducts(ctx context.Context, params dto.GetProductsParams) ([]entity.Product, int, error)
+	GetProductByID(ctx context.Context, productID int) (*entity.ProductDetail, error)
+	FetchProductVariantByID(ctx context.Context, productID int) ([]entity.ProductVariant, error)
 }

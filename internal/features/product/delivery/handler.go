@@ -6,6 +6,7 @@ import (
 	errs "shop/pkg/utils/errors"
 	"shop/pkg/utils/messages"
 	"shop/pkg/utils/response"
+	"strconv"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
@@ -21,6 +22,20 @@ func NewHandler(useCase UseCase, validator validator.Validate) handler {
 		useCase:   useCase,
 		validator: validator,
 	}
+}
+func (h handler) GetProductDetail(c *fiber.Ctx) error {
+	productID, err := strconv.Atoi(c.Params("id"))
+	if err != nil {
+		slog.Debug("convert params error", slog.String("value", c.Params("product_id")))
+		return response.ErrorJson(c, errs.ErrGetProductDetailConvertParamError, fiber.StatusBadRequest)
+	}
+
+	result, err := h.useCase.GetProductDetail(c.Context(), productID)
+	if err != nil {
+		return response.ErrorJson(c, errs.ErrGetProductDetailFailed, fiber.StatusBadRequest)
+	}
+
+	return response.SuccessJson(c, result, messages.GetProductDetailSuccess)
 }
 
 func (h handler) GetProducts(c *fiber.Ctx) error {

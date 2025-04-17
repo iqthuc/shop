@@ -10,5 +10,6 @@ const (
 	RefreshSuccess AppMessage = "refresh token success"
 
 	// product.
-	GetProductsSuccess AppMessage = "get product success"
+	GetProductsSuccess      AppMessage = "get products success"
+	GetProductDetailSuccess AppMessage = "get product detail success"
 )

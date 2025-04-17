@@ -7,6 +7,8 @@ import (
 	"shop/internal/features/product/entity"
 	"shop/internal/infrastructure/database/store"
 	"shop/internal/infrastructure/database/store/db"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type repository struct {
@@ -48,4 +50,47 @@ func (repo repository) FetchProducts(ctx context.Context, params dto.GetProducts
 	}
 
 	return products, int(totalCount), nil
+}
+
+func (repo repository) GetProductByID(ctx context.Context, productID int) (*entity.ProductDetail, error) {
+	p, err := repo.store.GetProductDetails(ctx, int32(productID))
+	if err != nil {
+		slog.Debug("query db error", slog.String("error", err.Error()))
+		return nil, err
+	}
+
+	product := entity.ProductDetail{
+		ID:           int(p.ID),
+		Name:         p.Name,
+		Slug:         p.Slug,
+		Desciprtion:  p.Desciprtion.String,
+		MainImageUrl: p.MainImageUrl.String,
+		BasePrice:    p.PBasePrice,
+		CategoryID:   int(p.CategoryID.Int32),
+		CategoryName: p.CategoryName.String,
+		BrandID:      int(p.BrandID.Int32),
+		BrandName:    p.BrandName.String,
+	}
+
+	return &product, nil
+}
+
+func (repo repository) FetchProductVariantByID(
+	ctx context.Context,
+	productID int,
+) ([]entity.ProductVariant, error) {
+	raws, err := repo.store.GetProductVariants(ctx, pgtype.Int4{Int32: int32(productID), Valid: true})
+	if err != nil {
+		slog.Debug("query db error", slog.String("error", err.Error()))
+		return nil, err
+	}
+	pv := make([]entity.ProductVariant, 0, len(raws))
+	for _, v := range raws {
+		p := entity.ProductVariant{
+			ID: int(v.ID),
+		}
+		pv = append(pv, p)
+	}
+
+	return pv, nil
 }

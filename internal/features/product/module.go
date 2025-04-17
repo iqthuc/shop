@@ -17,4 +17,5 @@ func SetupModule(r fiber.Router, s store.Store, v validator.Validate) {
 
 	api := r.Group("/api")
 	api.Get("/products", handler.GetProducts)
+	api.Get("/product/:id", handler.GetProductDetail)
 }

@@ -2,6 +2,7 @@ package use_case
 
 import (
 	"context"
+	"log/slog"
 	"shop/internal/features/product/dto"
 	"shop/internal/features/product/entity"
 	"strings"
@@ -17,7 +18,10 @@ func NewUseCase(repo repository) useCase {
 	}
 }
 
-func (u useCase) GetProducts(ctx context.Context, input dto.GetProductsRequest) (*dto.GetProductsResult[entity.Product], error) {
+func (u useCase) GetProducts(
+	ctx context.Context,
+	input dto.GetProductsRequest,
+) (*dto.GetProductsResult[entity.Product], error) {
 	currentPage := input.Page
 	perpage := 15
 	offset := (currentPage - 1) * perpage
@@ -59,4 +63,28 @@ func (u useCase) GetProducts(ctx context.Context, input dto.GetProductsRequest) 
 	}
 
 	return result, nil
+}
+
+func (u useCase) GetProductDetail(
+	ctx context.Context,
+	productID int,
+) (*dto.GetProductDetailResult, error) {
+	product, err := u.repo.GetProductByID(ctx, productID)
+	if err != nil {
+		slog.Debug("failed to get productByID", slog.String("error", err.Error()))
+		return nil, err
+	}
+
+	detail := dto.GetProductDetailResult{
+		Detail: product,
+	}
+
+	variants, err := u.repo.FetchProductVariantByID(ctx, productID)
+	if err != nil {
+		slog.Debug("failed to get productByID", slog.String("error", err.Error()))
+		return &detail, err
+	}
+	detail.Variants = variants
+
+	return &detail, nil
 }

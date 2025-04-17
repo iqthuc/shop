@@ -7,7 +7,112 @@ package db
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
+
+const getProductDetails = `-- name: GetProductDetails :one
+SELECT
+    p.id,
+    p.name,
+    p.slug,
+    p.desciprtion,
+    p.main_image_url,
+    p.base_price::float8,
+    c.id AS category_id,
+    c.name AS category_name,
+    b.id AS brand_id,
+    b.name AS brand_name
+FROM
+    products p
+LEFT JOIN
+    categories c ON p.category_id = c.id
+LEFT JOIN
+    brands b ON p.brand_id = b.id
+WHERE
+    p.id = $1
+GROUP BY
+    p.id, c.id, c.name, b.id, b.name
+`
+
+type GetProductDetailsRow struct {
+	ID           int32       `json:"id"`
+	Name         string      `json:"name"`
+	Slug         string      `json:"slug"`
+	Desciprtion  pgtype.Text `json:"desciprtion"`
+	MainImageUrl pgtype.Text `json:"main_image_url"`
+	PBasePrice   float64     `json:"p_base_price"`
+	CategoryID   pgtype.Int4 `json:"category_id"`
+	CategoryName pgtype.Text `json:"category_name"`
+	BrandID      pgtype.Int4 `json:"brand_id"`
+	BrandName    pgtype.Text `json:"brand_name"`
+}
+
+func (q *Queries) GetProductDetails(ctx context.Context, id int32) (GetProductDetailsRow, error) {
+	row := q.db.QueryRow(ctx, getProductDetails, id)
+	var i GetProductDetailsRow
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Slug,
+		&i.Desciprtion,
+		&i.MainImageUrl,
+		&i.PBasePrice,
+		&i.CategoryID,
+		&i.CategoryName,
+		&i.BrandID,
+		&i.BrandName,
+	)
+	return i, err
+}
+
+const getProductVariants = `-- name: GetProductVariants :many
+SELECT
+	pv.id,
+	pv.product_id,
+	pv.sku,
+	pv.price,
+	pv.stock_quantity,
+	pv.sold,
+	pv.image_url,
+	pv.is_default
+FROM
+	product_variants pv
+	LEFT JOIN variant_attribute_values AS vav ON pv.id = vav.variant_id
+	LEFT JOIN attribute_values AS av ON vav.value_id = av.id
+	LEFT JOIN "attributes" AS a ON av.attribute_id = a.id
+WHERE product_id = $1
+GROUP BY pv.id
+`
+
+func (q *Queries) GetProductVariants(ctx context.Context, productID pgtype.Int4) ([]ProductVariant, error) {
+	rows, err := q.db.Query(ctx, getProductVariants, productID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ProductVariant{}
+	for rows.Next() {
+		var i ProductVariant
+		if err := rows.Scan(
+			&i.ID,
+			&i.ProductID,
+			&i.Sku,
+			&i.Price,
+			&i.StockQuantity,
+			&i.Sold,
+			&i.ImageUrl,
+			&i.IsDefault,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
 
 const getProducts = `-- name: GetProducts :many
 SELECT id, name, base_price::float8
