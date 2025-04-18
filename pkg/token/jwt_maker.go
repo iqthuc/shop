@@ -7,16 +7,18 @@ import (
 	"github.com/golang-jwt/jwt"
 )
 
-type JWTMaker struct {
+type jwtMaker struct {
 	secretKey string
 }
 
-func NewJWTMaker(secretKey string) TokenMaker {
-	return JWTMaker{
+//nolint:ireturn
+func NewJwtMaker(secretKey string) jwtMaker {
+	return jwtMaker{
 		secretKey: secretKey,
 	}
 }
-func (maker JWTMaker) CreateToken(userID, role string, tokenRole TokenRole, duration time.Duration) (string, error) {
+
+func (maker jwtMaker) CreateToken(userID, role string, tokenRole TokenRole, duration time.Duration) (string, error) {
 	now := time.Now()
 	claims := TokenClaims{
 		UserID:    userID,
@@ -33,7 +35,7 @@ func (maker JWTMaker) CreateToken(userID, role string, tokenRole TokenRole, dura
 	return token.SignedString([]byte(maker.secretKey))
 }
 
-func (maker JWTMaker) VerifyToken(token string) (*TokenClaims, error) {
+func (maker jwtMaker) VerifyToken(token string) (*TokenClaims, error) {
 	keyFunc := func(token *jwt.Token) (any, error) {
 		_, ok := token.Method.(*jwt.SigningMethodHMAC)
 		if !ok {

@@ -26,7 +26,8 @@ func NewHandler(useCase UseCase, validator validator.Validate) handler {
 }
 
 func (h handler) Logout(c *fiber.Ctx) error {
-	// thêm access token vào blacklist
+	// add token to blacklist later
+
 	c.ClearCookie("refresh_token")
 	return response.SuccessJson(c, nil, messages.LogoutSuccess)
 }
@@ -96,7 +97,7 @@ func (h handler) SignUp(c *fiber.Ctx) error {
 	}
 
 	if err := h.validator.Struct(req); err != nil {
-		return errs.ErrValidationFailed
+		return response.ErrorJson(c, errs.PrettyValidationErrors(err), fiber.StatusBadRequest)
 	}
 
 	input := dto.SignUpInput(req)

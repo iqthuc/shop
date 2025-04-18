@@ -10,6 +10,10 @@ import (
 
 type Querier interface {
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
+	GetProductDetails(ctx context.Context, id int32) (GetProductDetailsRow, error)
+	GetProductVariants(ctx context.Context, productID int32) ([]ProductVariant, error)
+	GetProducts(ctx context.Context, arg GetProductsParams) ([]GetProductsRow, error)
+	GetProductsCount(ctx context.Context) (int64, error)
 	GetUserByEmail(ctx context.Context, email string) (User, error)
 }
 

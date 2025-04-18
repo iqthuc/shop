@@ -12,11 +12,6 @@ type SignUpInput struct {
 	Password string
 }
 
-type SignUpResult struct {
-	email     string
-	createdAt time.Time
-}
-
 type SignUpResponse struct {
 	Email     string    `json:"email"`
 	CreatedAt time.Time `json:"created_at"`

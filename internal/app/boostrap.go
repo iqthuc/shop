@@ -25,15 +25,10 @@ func Bootstrap() {
 	slog.Info("Application running...", slog.String("env", env))
 
 	server := server.New(appConfig.Server)
-	store := store.New(appConfig.Database)
+	store := store.NewPostgresStore(appConfig.Database)
 	validator := validator.New()
-	tkMaker := token.NewJWTMaker(appConfig.Token.SecretKey)
+	tkMaker := token.NewJwtMaker(appConfig.Token.SecretKey)
 
-	app := &application{
-		server:     server,
-		store:      store,
-		validator:  validator,
-		tokenMaker: &tkMaker,
-	}
+	app := NewApp(server, store, validator, tkMaker)
 	app.run()
 }

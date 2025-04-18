@@ -14,11 +14,11 @@ type APIResponse struct {
 	Status  int    `json:"status"`
 }
 
-func JsonResponse(c *fiber.Ctx, response APIResponse) error {
-	return c.Status(response.Code).JSON(response)
+func JsonResponse(ctx *fiber.Ctx, response APIResponse) error {
+	return ctx.Status(response.Code).JSON(response)
 }
 
-func ErrorJson(c *fiber.Ctx, err errs.AppError, code int) error {
+func ErrorJson(ctx *fiber.Ctx, err errs.AppError, code int) error {
 	response := APIResponse{
 		Message: err.Error(),
 		Code:    code,
@@ -26,10 +26,10 @@ func ErrorJson(c *fiber.Ctx, err errs.AppError, code int) error {
 		Status:  0,
 	}
 
-	return JsonResponse(c, response)
+	return JsonResponse(ctx, response)
 }
 
-func SuccessJson(c *fiber.Ctx, data any, message messages.AppMessage) error {
+func SuccessJson(ctx *fiber.Ctx, data any, message messages.AppMessage) error {
 	response := APIResponse{
 		Message: string(message),
 		Code:    fiber.StatusOK,
@@ -37,5 +37,5 @@ func SuccessJson(c *fiber.Ctx, data any, message messages.AppMessage) error {
 		Status:  1,
 	}
 
-	return JsonResponse(c, response)
+	return JsonResponse(ctx, response)
 }

@@ -5,15 +5,69 @@
 package db
 
 import (
-	"github.com/jackc/pgx/v5/pgtype"
+	"database/sql"
+	"time"
+
+	"github.com/google/uuid"
+	"github.com/shopspring/decimal"
 )
 
+type Attribute struct {
+	ID int32 `json:"id"`
+	// eg: color, size
+	Name string `json:"name"`
+}
+
+type AttributeValue struct {
+	ID          int32 `json:"id"`
+	AttributeID int32 `json:"attribute_id"`
+	// eg: red, blue, S, M
+	Value string `json:"value"`
+}
+
+type Brand struct {
+	ID   int32  `json:"id"`
+	Name string `json:"name"`
+}
+
+type Category struct {
+	ID   int32  `json:"id"`
+	Name string `json:"name"`
+}
+
+type Product struct {
+	ID           int32           `json:"id"`
+	Name         string          `json:"name"`
+	Slug         string          `json:"slug"`
+	Desciprtion  sql.NullString  `json:"desciprtion"`
+	CategoryID   int32           `json:"category_id"`
+	BrandID      int32           `json:"brand_id"`
+	MainImageUrl sql.NullString  `json:"main_image_url"`
+	BasePrice    decimal.Decimal `json:"base_price"`
+}
+
+type ProductVariant struct {
+	ID            int32           `json:"id"`
+	ProductID     int32           `json:"product_id"`
+	Sku           string          `json:"sku"`
+	Price         decimal.Decimal `json:"price"`
+	StockQuantity int32           `json:"stock_quantity"`
+	Sold          int32           `json:"sold"`
+	ImageUrl      sql.NullString  `json:"image_url"`
+	IsDefault     bool            `json:"is_default"`
+}
+
 type User struct {
-	ID           pgtype.UUID      `json:"id"`
-	Username     pgtype.Text      `json:"username"`
-	Email        string           `json:"email"`
-	PasswordHash pgtype.Text      `json:"password_hash"`
-	Role         pgtype.Text      `json:"role"`
-	CreatedAt    pgtype.Timestamp `json:"created_at"`
-	UpdatedAt    pgtype.Timestamp `json:"updated_at"`
+	ID           uuid.UUID      `json:"id"`
+	Username     sql.NullString `json:"username"`
+	Email        string         `json:"email"`
+	PasswordHash sql.NullString `json:"password_hash"`
+	Role         string         `json:"role"`
+	CreatedAt    time.Time      `json:"created_at"`
+	UpdatedAt    sql.NullTime   `json:"updated_at"`
+}
+
+type VariantAttributeValue struct {
+	VariantID int32 `json:"variant_id"`
+	ValueID   int32 `json:"value_id"`
 }
