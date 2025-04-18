@@ -4,11 +4,10 @@ import (
 	"context"
 	"log/slog"
 	"shop/internal/features/product/dto"
-	"shop/internal/features/product/entity"
 	"shop/internal/infrastructure/database/store"
 	"shop/internal/infrastructure/database/store/db"
-
-	"github.com/jackc/pgx/v5/pgtype"
+	errs "shop/pkg/utils/errors"
+	safetype "shop/pkg/utils/safe_type"
 )
 
 type repository struct {
@@ -21,10 +20,17 @@ func NewRepository(store store.Store) repository {
 	}
 }
 
-func (repo repository) FetchProducts(ctx context.Context, params dto.GetProductsParams) ([]entity.Product, int, error) {
+func (repo repository) FetchProducts(ctx context.Context, params dto.GetProductsParams) ([]dto.Product, int, error) {
+	safeLimit, err1 := safetype.SafeIntToInt32(params.Limit)
+	safeOffset, err2 := safetype.SafeIntToInt32(params.Offset)
+	if err1 != nil || err2 != nil {
+		return nil, 0, errs.ErrOverflow
+	}
+
+	slog.Info("check", slog.Int("value", params.Offset))
 	pr := db.GetProductsParams{
-		Limit:         int32(params.Limit),
-		Offset:        int32(params.Offset),
+		Limit:         safeLimit,
+		Offset:        safeOffset,
 		KeyWord:       params.Filters.Keyword,
 		SortColumn:    params.SortBy.Field,
 		SortDirection: params.SortBy.Order,
@@ -40,9 +46,9 @@ func (repo repository) FetchProducts(ctx context.Context, params dto.GetProducts
 		slog.Debug("query db error", slog.String("error", err.Error()))
 	}
 
-	products := make([]entity.Product, 0, len(result))
+	products := make([]dto.Product, 0, len(result))
 	for _, p := range result {
-		products = append(products, entity.Product{
+		products = append(products, dto.Product{
 			ID:        int(p.ID),
 			Name:      p.Name,
 			BasePrice: p.BasePrice,
@@ -52,23 +58,28 @@ func (repo repository) FetchProducts(ctx context.Context, params dto.GetProducts
 	return products, int(totalCount), nil
 }
 
-func (repo repository) GetProductByID(ctx context.Context, productID int) (*entity.ProductDetail, error) {
-	p, err := repo.store.GetProductDetails(ctx, int32(productID))
+func (repo repository) GetProductByID(ctx context.Context, productID int) (*dto.ProductDetail, error) {
+	safeProductID, err := safetype.SafeIntToInt32(productID)
+	if err != nil {
+		return nil, errs.ErrOverflow
+	}
+
+	p, err := repo.store.GetProductDetails(ctx, safeProductID)
 	if err != nil {
 		slog.Debug("query db error", slog.String("error", err.Error()))
 		return nil, err
 	}
 
-	product := entity.ProductDetail{
+	product := dto.ProductDetail{
 		ID:           int(p.ID),
 		Name:         p.Name,
 		Slug:         p.Slug,
 		Desciprtion:  p.Desciprtion.String,
 		MainImageUrl: p.MainImageUrl.String,
-		BasePrice:    p.PBasePrice,
-		CategoryID:   int(p.CategoryID.Int32),
+		BasePrice:    p.BasePrice,
+		CategoryID:   int(p.CategoryID),
 		CategoryName: p.CategoryName.String,
-		BrandID:      int(p.BrandID.Int32),
+		BrandID:      int(p.BrandID),
 		BrandName:    p.BrandName.String,
 	}
 
@@ -78,17 +89,21 @@ func (repo repository) GetProductByID(ctx context.Context, productID int) (*enti
 func (repo repository) FetchProductVariantByID(
 	ctx context.Context,
 	productID int,
-) ([]entity.ProductVariant, error) {
-	raws, err := repo.store.GetProductVariants(ctx, pgtype.Int4{Int32: int32(productID), Valid: true})
+) ([]dto.ProductVariant, error) {
+	safeProductID, err := safetype.SafeIntToInt32(productID)
+	if err != nil {
+		return nil, errs.ErrOverflow
+	}
+
+	raws, err := repo.store.GetProductVariants(ctx, safeProductID)
 	if err != nil {
 		slog.Debug("query db error", slog.String("error", err.Error()))
 		return nil, err
 	}
-	pv := make([]entity.ProductVariant, 0, len(raws))
+
+	pv := make([]dto.ProductVariant, 0, len(raws))
 	for _, v := range raws {
-		p := entity.ProductVariant{
-			ID: int(v.ID),
-		}
+		p := dto.ProductVariant(v)
 		pv = append(pv, p)
 	}
 

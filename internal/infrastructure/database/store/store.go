@@ -18,7 +18,7 @@ type PostgresStore struct {
 	*db.Queries
 }
 
-func New(cfg *config.Database) Store {
+func NewPostgresStore(cfg *config.Database) *PostgresStore {
 	conn, err := pgx.Connect(context.Background(), cfg.DataSourceName())
 	if err != nil {
 		log.Panicf("cannot open postgresql: %s ", err)

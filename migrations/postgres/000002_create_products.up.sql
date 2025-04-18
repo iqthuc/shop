@@ -10,10 +10,10 @@ CREATE TABLE "products" (
     "name" varchar NOT NULL,
     "slug" varchar UNIQUE NOT NULL,
     "desciprtion" text,
-    "category_id" int,
-    "brand_id" int,
+    "category_id" int NOT NULL,
+    "brand_id" int NOT NULL,
     "main_image_url" varchar,
-    "base_price" decimal(10, 2) DEFAULT 0
+    "base_price" decimal(10, 2) NOT NULL DEFAULT 0
 );
 
 CREATE TABLE "attributes" (
@@ -23,13 +23,13 @@ CREATE TABLE "attributes" (
 
 CREATE TABLE "attribute_values" (
     "id" serial PRIMARY KEY,
-    "attribute_id" int,
-    "value" varchar
+    "attribute_id" int NOT NULL,
+    "value" varchar NOT NULL
 );
 
 CREATE TABLE "product_variants" (
     "id" serial PRIMARY KEY,
-    "product_id" int,
+    "product_id" int NOT NULL,
     "sku" varchar UNIQUE NOT NULL,
     "price" decimal(15, 2) NOT NULL,
     "stock_quantity" int NOT NULL DEFAULT 0,
@@ -38,7 +38,10 @@ CREATE TABLE "product_variants" (
     "is_default" bool NOT NULL DEFAULT false
 );
 
-CREATE TABLE "variant_attribute_values" ("variant_id" int, "value_id" int);
+CREATE TABLE "variant_attribute_values" (
+    "variant_id" int NOT NULL,
+    "value_id" int NOT NULL
+);
 
 CREATE INDEX ON "products" ("name");
 

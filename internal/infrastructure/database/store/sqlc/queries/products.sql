@@ -1,5 +1,5 @@
 -- name: GetProducts :many
-SELECT id, name, base_price::float8
+SELECT id, name, base_price
 FROM products
 WHERE (@key_word::text = '' OR name ILIKE '%' || @key_word || '%')
 ORDER BY
@@ -19,7 +19,7 @@ SELECT
     p.slug,
     p.desciprtion,
     p.main_image_url,
-    p.base_price::float8,
+    p.base_price,
     c.id AS category_id,
     c.name AS category_name,
     b.id AS brand_id,

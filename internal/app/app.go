@@ -21,7 +21,21 @@ type application struct {
 	server     *server.Server
 	store      store.Store
 	validator  *validator.Validate
-	tokenMaker *token.TokenMaker
+	tokenMaker token.TokenMaker
+}
+
+func NewApp(
+	server *server.Server,
+	store store.Store,
+	validator *validator.Validate,
+	tokenMaker token.TokenMaker,
+) *application {
+	return &application{
+		server:     server,
+		store:      store,
+		validator:  validator,
+		tokenMaker: tokenMaker,
+	}
 }
 
 func (a *application) run() {
@@ -31,7 +45,7 @@ func (a *application) run() {
 
 func (a *application) registerRoutes() {
 	a.server.Fiber.Use(logger.New())
-	auth.SetupModule(a.server.Fiber, a.store, *a.validator, *a.tokenMaker)
+	auth.SetupModule(a.server.Fiber, a.store, *a.validator, a.tokenMaker)
 	product.SetupModule(a.server.Fiber, a.store, *a.validator)
 }
 

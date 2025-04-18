@@ -1,11 +1,15 @@
 version: "2"
 linters:
-  default: fast
-
+  default: all
   disable:
     - depguard
     - wsl
     - testpackage
+    - tagliatelle
+    - revive
+    - wrapcheck
+    - exhaustruct
+    - varnamelen
     - tagalign
   settings:
     nlreturn:

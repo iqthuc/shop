@@ -1,9 +1,11 @@
 package dto
 
+import "github.com/shopspring/decimal"
+
 type Product struct {
-	ID        int     `json:"id"`
-	Name      string  `json:"name"`
-	BasePrice float64 `json:"base_price"`
+	ID        int             `json:"id"`
+	Name      string          `json:"name"`
+	BasePrice decimal.Decimal `json:"base_price"`
 }
 
 type GetProductsResult[T any] struct {

@@ -3,11 +3,10 @@ package use_case
 import (
 	"context"
 	"shop/internal/features/product/dto"
-	"shop/internal/features/product/entity"
 )
 
 type repository interface {
-	FetchProducts(ctx context.Context, params dto.GetProductsParams) ([]entity.Product, int, error)
-	GetProductByID(ctx context.Context, productID int) (*entity.ProductDetail, error)
-	FetchProductVariantByID(ctx context.Context, productID int) ([]entity.ProductVariant, error)
+	FetchProducts(ctx context.Context, params dto.GetProductsParams) ([]dto.Product, int, error)
+	GetProductByID(ctx context.Context, productID int) (*dto.ProductDetail, error)
+	FetchProductVariantByID(ctx context.Context, productID int) ([]dto.ProductVariant, error)
 }

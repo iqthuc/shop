@@ -7,8 +7,9 @@ package db
 
 import (
 	"context"
+	"database/sql"
 
-	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/shopspring/decimal"
 )
 
 const getProductDetails = `-- name: GetProductDetails :one
@@ -18,7 +19,7 @@ SELECT
     p.slug,
     p.desciprtion,
     p.main_image_url,
-    p.base_price::float8,
+    p.base_price,
     c.id AS category_id,
     c.name AS category_name,
     b.id AS brand_id,
@@ -36,16 +37,16 @@ GROUP BY
 `
 
 type GetProductDetailsRow struct {
-	ID           int32       `json:"id"`
-	Name         string      `json:"name"`
-	Slug         string      `json:"slug"`
-	Desciprtion  pgtype.Text `json:"desciprtion"`
-	MainImageUrl pgtype.Text `json:"main_image_url"`
-	PBasePrice   float64     `json:"p_base_price"`
-	CategoryID   pgtype.Int4 `json:"category_id"`
-	CategoryName pgtype.Text `json:"category_name"`
-	BrandID      pgtype.Int4 `json:"brand_id"`
-	BrandName    pgtype.Text `json:"brand_name"`
+	ID           int32           `json:"id"`
+	Name         string          `json:"name"`
+	Slug         string          `json:"slug"`
+	Desciprtion  sql.NullString  `json:"desciprtion"`
+	MainImageUrl sql.NullString  `json:"main_image_url"`
+	BasePrice    decimal.Decimal `json:"base_price"`
+	CategoryID   int32           `json:"category_id"`
+	CategoryName sql.NullString  `json:"category_name"`
+	BrandID      int32           `json:"brand_id"`
+	BrandName    sql.NullString  `json:"brand_name"`
 }
 
 func (q *Queries) GetProductDetails(ctx context.Context, id int32) (GetProductDetailsRow, error) {
@@ -57,7 +58,7 @@ func (q *Queries) GetProductDetails(ctx context.Context, id int32) (GetProductDe
 		&i.Slug,
 		&i.Desciprtion,
 		&i.MainImageUrl,
-		&i.PBasePrice,
+		&i.BasePrice,
 		&i.CategoryID,
 		&i.CategoryName,
 		&i.BrandID,
@@ -85,7 +86,7 @@ WHERE product_id = $1
 GROUP BY pv.id
 `
 
-func (q *Queries) GetProductVariants(ctx context.Context, productID pgtype.Int4) ([]ProductVariant, error) {
+func (q *Queries) GetProductVariants(ctx context.Context, productID int32) ([]ProductVariant, error) {
 	rows, err := q.db.Query(ctx, getProductVariants, productID)
 	if err != nil {
 		return nil, err
@@ -115,7 +116,7 @@ func (q *Queries) GetProductVariants(ctx context.Context, productID pgtype.Int4)
 }
 
 const getProducts = `-- name: GetProducts :many
-SELECT id, name, base_price::float8
+SELECT id, name, base_price
 FROM products
 WHERE ($3::text = '' OR name ILIKE '%' || $3 || '%')
 ORDER BY
@@ -135,9 +136,9 @@ type GetProductsParams struct {
 }
 
 type GetProductsRow struct {
-	ID        int32   `json:"id"`
-	Name      string  `json:"name"`
-	BasePrice float64 `json:"base_price"`
+	ID        int32           `json:"id"`
+	Name      string          `json:"name"`
+	BasePrice decimal.Decimal `json:"base_price"`
 }
 
 func (q *Queries) GetProducts(ctx context.Context, arg GetProductsParams) ([]GetProductsRow, error) {

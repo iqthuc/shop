@@ -5,6 +5,7 @@ import (
 )
 
 func TestHashAndCheckPassword_Success(t *testing.T) {
+	t.Parallel()
 	password := "myStrongPassword123!"
 
 	hashed, err := HashPassword(password)
@@ -22,6 +23,7 @@ func TestHashAndCheckPassword_Success(t *testing.T) {
 }
 
 func TestCheckPasswordHash_Failure(t *testing.T) {
+	t.Parallel()
 	password := "correctPassword"
 	wrongPassword := "wrongPassword"
 

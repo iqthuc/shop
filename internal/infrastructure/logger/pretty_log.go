@@ -85,16 +85,17 @@ func getSource(skip int) string {
 		return "???:0"
 	}
 
-	// get last folder + filename
+	// get two last folder + filename
 	dir, filename := filepath.Split(file)
 	parent := filepath.Base(filepath.Clean(dir))
+	grandparent := filepath.Base(filepath.Dir(filepath.Clean(dir)))
 
-	return fmt.Sprintf("%s/%s:%d", parent, filename, line)
+	return fmt.Sprintf("%s/%s/%s:%d", grandparent, parent, filename, line)
 }
 
 func (h *Handler) Handle(ctx context.Context, r slog.Record) error {
 	if h.addSource {
-		if !(h.disableSourceInfo && r.Level == slog.LevelInfo) {
+		if !h.disableSourceInfo || r.Level != slog.LevelInfo {
 			depth := 4
 			r.AddAttrs(slog.String("source", getSource(depth)))
 		}
@@ -121,7 +122,7 @@ func (h *Handler) Handle(ctx context.Context, r slog.Record) error {
 	if err != nil {
 		return fmt.Errorf("error when marshaling attrs: %w", err)
 	}
-
+	//nolint:forbidigo
 	fmt.Println(
 		colorize(lightGray, r.Time.Format(timeFormat)),
 		level,

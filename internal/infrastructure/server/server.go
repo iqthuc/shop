@@ -1,6 +1,7 @@
 package server
 
 import (
+	"errors"
 	"log/slog"
 	"shop/internal/infrastructure/config"
 
@@ -38,8 +39,9 @@ func (s *Server) ListenAndServe() {
 func NewErrorHandler() fiber.ErrorHandler {
 	return func(ctx *fiber.Ctx, err error) error {
 		code := fiber.StatusInternalServerError
-		if e, ok := err.(*fiber.Error); ok {
-			code = e.Code
+		var fe *fiber.Error
+		if errors.As(err, &fe) {
+			code = fe.Code
 		}
 
 		return ctx.Status(code).JSON(fiber.Map{

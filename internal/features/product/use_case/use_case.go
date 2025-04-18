@@ -4,7 +4,6 @@ import (
 	"context"
 	"log/slog"
 	"shop/internal/features/product/dto"
-	"shop/internal/features/product/entity"
 	"strings"
 )
 
@@ -21,10 +20,10 @@ func NewUseCase(repo repository) useCase {
 func (u useCase) GetProducts(
 	ctx context.Context,
 	input dto.GetProductsRequest,
-) (*dto.GetProductsResult[entity.Product], error) {
-	currentPage := input.Page
+) (*dto.GetProductsResult[dto.Product], error) {
+	currentPage := max(input.Page, 1)
 	perpage := 15
-	offset := (currentPage - 1) * perpage
+	offset := currentPage * perpage
 	sortDirection := strings.ToLower(input.SortBy.Order)
 	if sortDirection == "" {
 		sortDirection = "asc"
@@ -47,10 +46,10 @@ func (u useCase) GetProducts(
 
 	// calculate pagination
 	totalPages := (totalCount + perpage - 1) / perpage
-	prevPage := max(currentPage-1, 1)
+	prevPage := max(currentPage-1, 0)
 	nextPage := min(currentPage+1, totalPages)
 
-	result := &dto.GetProductsResult[entity.Product]{
+	result := &dto.GetProductsResult[dto.Product]{
 		Items: products,
 		Pagination: dto.Pagination{
 			CurrentPage: currentPage,

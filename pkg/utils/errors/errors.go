@@ -26,20 +26,24 @@ var (
 	ErrRefreshTokenNotFound AppError = errors.New("refresh token not found")
 	ErrInvalidRefreshToken  AppError = errors.New("refresh token is invalid")
 
-	//products.
+	// products.
 	ErrGetProductsFailed                 AppError = errors.New("failed to get products")
 	ErrGetProductDetailFailed            AppError = errors.New("failed to get product detail")
 	ErrGetProductDetailConvertParamError AppError = errors.New("get product detail convert param error")
+
+	// safe type.
+	ErrOverflow AppError = errors.New("value over flow")
 )
 
-func WrapValidationFailed(err error) error {
-	if _, ok := err.(validator.ValidationErrors); ok {
-		return fmt.Errorf("%w", err)
-	}
+// func WrapValidationFailed(err error) error {
+// 	if _, ok := err.(validator.ValidationErrors); ok {
+// 		return fmt.Errorf("%w", err)
+// 	}
 
-	return ErrValidationFailed
-}
+// 	return ErrValidationFailed
+// }
 
+//nolint:err113
 func PrettyValidationErrors(err error) error {
 	var sb strings.Builder
 	var ve validator.ValidationErrors
