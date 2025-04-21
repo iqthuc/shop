@@ -3,8 +3,9 @@ package delivery
 import (
 	"errors"
 	"log/slog"
-	"shop/internal/features/auth/dto"
-	errs "shop/pkg/utils/errors"
+	"shop/internal/features/auth/core"
+	"shop/internal/features/auth/core/dto"
+	"shop/pkg/utils/errorx"
 	"shop/pkg/utils/messages"
 	"shop/pkg/utils/response"
 	"time"
@@ -14,11 +15,11 @@ import (
 )
 
 type handler struct {
-	useCase   UseCase
+	useCase   core.AuthUseCase
 	validator validator.Validate
 }
 
-func NewHandler(useCase UseCase, validator validator.Validate) handler {
+func NewHandler(useCase core.AuthUseCase, validator validator.Validate) handler {
 	return handler{
 		useCase:   useCase,
 		validator: validator,
@@ -29,35 +30,35 @@ func (h handler) Logout(c *fiber.Ctx) error {
 	// add token to blacklist later
 
 	c.ClearCookie("refresh_token")
-	return response.SuccessJson(c, nil, messages.LogoutSuccess)
+	return response.SuccessJson(c, nil, messages.LogoutSuccess.String())
 }
 
 func (h handler) RefreshToken(c *fiber.Ctx) error {
 	refreshToken := c.Cookies("refresh_token")
 	if refreshToken == "" {
-		return response.ErrorJson(c, errs.ErrRefreshTokenNotFound, fiber.StatusUnauthorized)
+		return response.ErrorJson(c, errorx.ErrRefreshTokenNotFound, fiber.StatusUnauthorized)
 	}
 
 	result, err := h.useCase.RefreshToken(c.Context(), refreshToken)
 	if err != nil {
-		return response.ErrorJson(c, errs.ErrInvalidRefreshToken, fiber.StatusUnauthorized)
+		return response.ErrorJson(c, errorx.ErrInvalidRefreshToken, fiber.StatusUnauthorized)
 	}
 
 	resp := dto.RefreshTokenReponse{
 		AccessToken: result,
 	}
 
-	return response.SuccessJson(c, resp, messages.RefreshSuccess)
+	return response.SuccessJson(c, resp, messages.RefreshSuccess.String())
 }
 
 func (h handler) Login(c *fiber.Ctx) error {
 	var req dto.LoginRequest
 	if err := c.BodyParser(&req); err != nil {
-		return response.ErrorJson(c, errs.ErrInvalidRequest, fiber.StatusBadRequest)
+		return response.ErrorJson(c, errorx.ErrInvalidRequest, fiber.StatusBadRequest)
 	}
 
 	if err := h.validator.Struct(req); err != nil {
-		return response.ErrorJson(c, errs.ErrValidationFailed, fiber.StatusBadRequest)
+		return response.ErrorJson(c, errorx.ErrValidationFailed, fiber.StatusBadRequest)
 	}
 
 	input := dto.LoginInput(req)
@@ -65,7 +66,7 @@ func (h handler) Login(c *fiber.Ctx) error {
 	result, err := h.useCase.Login(c.Context(), input)
 	if err != nil {
 		slog.Error("login failed", slog.String("error", err.Error()))
-		return response.ErrorJson(c, errs.ErrSomethingWrong, fiber.StatusInternalServerError)
+		return response.ErrorJson(c, errorx.ErrSomethingWrong, fiber.StatusInternalServerError)
 	}
 
 	resp := dto.LoginResponse{
@@ -86,18 +87,18 @@ func (h handler) Login(c *fiber.Ctx) error {
 
 	slog.Info("user login", slog.String("user", result.UserID.String()))
 
-	return response.SuccessJson(c, resp, messages.LoginSuccess)
+	return response.SuccessJson(c, resp, messages.LoginSuccess.String())
 }
 
 func (h handler) SignUp(c *fiber.Ctx) error {
 	var req dto.SignUpRequest
 
 	if err := c.BodyParser(&req); err != nil {
-		return response.ErrorJson(c, errs.ErrInvalidRequest, fiber.StatusBadRequest)
+		return response.ErrorJson(c, errorx.ErrInvalidRequest, fiber.StatusBadRequest)
 	}
 
 	if err := h.validator.Struct(req); err != nil {
-		return response.ErrorJson(c, errs.PrettyValidationErrors(err), fiber.StatusBadRequest)
+		return response.ErrorJson(c, errorx.PrettyValidationErrors(err), fiber.StatusBadRequest)
 	}
 
 	input := dto.SignUpInput(req)
@@ -105,16 +106,16 @@ func (h handler) SignUp(c *fiber.Ctx) error {
 	if err != nil {
 		slog.Error("signup failed something", slog.String("details", err.Error()))
 		switch {
-		case errors.Is(err, errs.ErrValidationFailed):
-			return response.ErrorJson(c, errs.ErrValidationFailed, fiber.StatusBadRequest)
-		case errors.Is(err, errs.ErrEmailAlready):
-			return response.ErrorJson(c, errs.ErrEmailAlready, fiber.StatusBadRequest)
+		case errors.Is(err, errorx.ErrValidationFailed):
+			return response.ErrorJson(c, errorx.ErrValidationFailed, fiber.StatusBadRequest)
+		case errors.Is(err, errorx.ErrEmailAlready):
+			return response.ErrorJson(c, errorx.ErrEmailAlready, fiber.StatusBadRequest)
 		default:
-			return response.ErrorJson(c, errs.ErrSomethingWrong, fiber.StatusInternalServerError)
+			return response.ErrorJson(c, errorx.ErrSomethingWrong, fiber.StatusInternalServerError)
 		}
 	}
 
 	slog.Info("sign up success")
 
-	return response.SuccessJson(c, nil, messages.SignUpSuccess)
+	return response.SuccessJson(c, nil, messages.SignUpSuccess.String())
 }

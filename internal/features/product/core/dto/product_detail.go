@@ -1,8 +1,6 @@
 package dto
 
 import (
-	"database/sql"
-
 	"github.com/shopspring/decimal"
 )
 
@@ -31,6 +29,6 @@ type ProductVariant struct {
 	Price         decimal.Decimal `json:"price"`
 	StockQuantity int32           `json:"stock_quantity"`
 	Sold          int32           `json:"sold"`
-	ImageUrl      sql.NullString  `json:"image_url"`
+	ImageUrl      string          `json:"image_url"`
 	IsDefault     bool            `json:"is_default"`
 }

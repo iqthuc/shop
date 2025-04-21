@@ -3,6 +3,10 @@ package messages
 // AppMessage để đảm bảo chỉ trả về những message này cho người dùng.
 type AppMessage string
 
+func (m AppMessage) String() string {
+	return string(m)
+}
+
 const (
 	SignUpSuccess  AppMessage = "sign up success"
 	LoginSuccess   AppMessage = "login success"

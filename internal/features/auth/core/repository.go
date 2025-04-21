@@ -1,11 +1,11 @@
-package use_case
+package core
 
 import (
 	"context"
-	"shop/internal/features/auth/entity"
+	"shop/internal/features/auth/core/entity"
 )
 
-type Repository interface {
+type AuthRepository interface {
 	CreateUser(ctx context.Context, user entity.User) error
 	GetUser(ctx context.Context, email string) (*entity.User, error)
 }

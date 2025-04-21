@@ -2,12 +2,12 @@ package middleware
 
 import (
 	"errors"
+	"log/slog"
 	"shop/pkg/token"
 	"shop/pkg/utils/response"
 	"strings"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/log"
 )
 
 const (
@@ -32,7 +32,6 @@ func JWTAuth(tokenMaker token.TokenMaker) fiber.Handler {
 		// check token type.
 		parts := strings.Fields(authHeader)
 		if len(parts) != 2 || strings.ToLower(parts[0]) != authorizationTypeKey {
-			log.Error(parts)
 			return response.ErrorJson(c, ErrInvalidHeaderFormat, fiber.ErrBadRequest.Code)
 		}
 
@@ -40,6 +39,7 @@ func JWTAuth(tokenMaker token.TokenMaker) fiber.Handler {
 		tokenString := parts[1]
 		claims, err := tokenMaker.VerifyToken(tokenString)
 		if err != nil || claims.TokenType != token.Access {
+			slog.Warn("verify token failed", slog.String("error", err.Error()))
 			return response.ErrorJson(c, ErrInvalidToken, fiber.ErrBadRequest.Code)
 		}
 		c.Locals(authorizationPayloadKey, claims)

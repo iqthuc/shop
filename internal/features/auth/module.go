@@ -1,9 +1,9 @@
 package auth
 
 import (
+	"shop/internal/features/auth/core"
 	"shop/internal/features/auth/delivery"
 	"shop/internal/features/auth/repository"
-	"shop/internal/features/auth/use_case"
 	"shop/internal/infrastructure/database/store"
 	"shop/internal/middleware"
 	"shop/pkg/token"
@@ -13,8 +13,8 @@ import (
 )
 
 func SetupModule(r fiber.Router, s store.Store, v validator.Validate, tk token.TokenMaker) {
-	repo := repository.NewRepository(s)
-	useCase := use_case.NewUseCase(repo, tk)
+	repo := repository.NewAuthPostgreRepo(s)
+	useCase := core.NewUseCase(repo, tk)
 	handler := delivery.NewHandler(useCase, v)
 
 	auth := r.Group("/auth")

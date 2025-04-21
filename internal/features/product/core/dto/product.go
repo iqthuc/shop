@@ -8,8 +8,8 @@ type Product struct {
 	BasePrice decimal.Decimal `json:"base_price"`
 }
 
-type GetProductsResult[T any] struct {
-	Items      []T `json:"items"`
+type GetProductsResult struct {
+	Items      []Product `json:"items"`
 	*Filter    `json:"filters,omitempty"`
 	*SortBy    `json:"sort_by,omitempty"`
 	Pagination `json:"pagination"`

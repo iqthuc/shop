@@ -1,9 +1,9 @@
 package product
 
 import (
-	"shop/internal/features/product/delivery"
+	"shop/internal/features/product/core"
+	"shop/internal/features/product/delivery/rest"
 	"shop/internal/features/product/repository"
-	"shop/internal/features/product/use_case"
 	"shop/internal/infrastructure/database/store"
 
 	"github.com/go-playground/validator/v10"
@@ -11,9 +11,9 @@ import (
 )
 
 func SetupModule(r fiber.Router, s store.Store, v validator.Validate) {
-	repo := repository.NewRepository(s)
-	useCase := use_case.NewUseCase(repo)
-	handler := delivery.NewHandler(useCase, v)
+	repo := repository.NewProductPostgreRepo(s)
+	useCase := core.NewProductUseCase(repo)
+	handler := rest.NewHandler(useCase, v)
 
 	api := r.Group("/api")
 	api.Get("/products", handler.GetProducts)

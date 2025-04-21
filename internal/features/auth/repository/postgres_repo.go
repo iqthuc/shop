@@ -5,25 +5,25 @@ import (
 	"database/sql"
 	"errors"
 	"log/slog"
-	"shop/internal/features/auth/entity"
+	"shop/internal/features/auth/core/entity"
 	"shop/internal/infrastructure/database/store"
 	"shop/internal/infrastructure/database/store/db"
-	errs "shop/pkg/utils/errors"
+	"shop/pkg/utils/errorx"
 
 	"github.com/jackc/pgx/v5/pgconn"
 )
 
-type repository struct {
+type authPostgreRepo struct {
 	store store.Store
 }
 
-func NewRepository(store store.Store) repository {
-	return repository{
+func NewAuthPostgreRepo(store store.Store) authPostgreRepo {
+	return authPostgreRepo{
 		store: store,
 	}
 }
 
-func (r repository) GetUser(ctx context.Context, email string) (*entity.User, error) {
+func (r authPostgreRepo) GetUser(ctx context.Context, email string) (*entity.User, error) {
 	user, err := r.store.GetUserByEmail(ctx, email)
 	if err != nil {
 		slog.Debug("failed to get user by email", slog.String("error", err.Error()))
@@ -41,7 +41,7 @@ func (r repository) GetUser(ctx context.Context, email string) (*entity.User, er
 	return u, nil
 }
 
-func (r repository) CreateUser(ctx context.Context, u entity.User) error {
+func (r authPostgreRepo) CreateUser(ctx context.Context, u entity.User) error {
 	params := db.CreateUserParams{
 		Email: u.Email,
 		PasswordHash: sql.NullString{
@@ -55,10 +55,10 @@ func (r repository) CreateUser(ctx context.Context, u entity.User) error {
 		slog.Debug("failed to create user", slog.String("error", err.Error()))
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) && pgErr.SQLState() == "23505" {
-			return errs.ErrEmailAlready
+			return errorx.ErrEmailAlready
 		}
 
-		return errs.ErrDatabaseQueryFailed
+		return errorx.ErrDatabaseQueryFailed
 	}
 
 	return nil

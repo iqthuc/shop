@@ -1,7 +1,6 @@
 package token
 
 import (
-	errs "shop/pkg/utils/errors"
 	"time"
 
 	"github.com/golang-jwt/jwt"
@@ -39,7 +38,7 @@ func (maker jwtMaker) VerifyToken(token string) (*TokenClaims, error) {
 	keyFunc := func(token *jwt.Token) (any, error) {
 		_, ok := token.Method.(*jwt.SigningMethodHMAC)
 		if !ok {
-			return nil, errs.ErrInvalidToken
+			return nil, ErrInvalidToken
 		}
 
 		return []byte(maker.secretKey), nil
@@ -47,12 +46,12 @@ func (maker jwtMaker) VerifyToken(token string) (*TokenClaims, error) {
 
 	jwtToken, err := jwt.ParseWithClaims(token, &TokenClaims{}, keyFunc)
 	if err != nil {
-		return nil, errs.ErrInvalidToken
+		return nil, ErrInvalidToken
 	}
 
 	claims, ok := jwtToken.Claims.(*TokenClaims)
 	if !ok || !jwtToken.Valid {
-		return nil, errs.ErrInvalidToken
+		return nil, ErrInvalidToken
 	}
 
 	return claims, nil
