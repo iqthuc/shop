@@ -2,11 +2,11 @@ package app
 
 import (
 	"context"
-	"log"
 	"log/slog"
 	"os"
 	"os/signal"
 	"shop/internal/features/auth"
+	"shop/internal/features/cart"
 	"shop/internal/features/product"
 	"shop/internal/infrastructure/database/store"
 	"shop/internal/infrastructure/server"
@@ -47,6 +47,7 @@ func (a *application) registerRoutes() {
 	a.server.Fiber.Use(logger.New())
 	auth.SetupModule(a.server.Fiber, a.store, *a.validator, a.tokenMaker)
 	product.SetupModule(a.server.Fiber, a.store, *a.validator)
+	cart.SetupModule(a.server.Fiber, a.store, *a.validator, a.tokenMaker)
 }
 
 func (a *application) startServer() {
@@ -78,9 +79,6 @@ func (a *application) cleanup() {
 	dbCtx, cancel := context.WithTimeout(context.Background(), dbShutdownTimeout)
 	defer cancel()
 
-	if err := a.store.CloseDB(dbCtx); err != nil {
-		log.Printf("Close database failed: %v", err)
-	}
-
+	a.store.CloseDB(dbCtx)
 	slog.Info("Database closed")
 }

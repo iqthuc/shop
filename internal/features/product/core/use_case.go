@@ -13,10 +13,10 @@ type ProductUseCase interface {
 }
 
 type useCase struct {
-	repo Repository
+	repo ProductRepository
 }
 
-func NewProductUseCase(repo Repository) useCase {
+func NewProductUseCase(repo ProductRepository) useCase {
 	return useCase{
 		repo: repo,
 	}

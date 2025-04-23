@@ -16,7 +16,7 @@ type repository struct {
 	store store.Store
 }
 
-func NewProductPostgreRepo(store store.Store) core.Repository {
+func NewProductPostgreRepo(store store.Store) core.ProductRepository {
 	return repository{
 		store: store,
 	}

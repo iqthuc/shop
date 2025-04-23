@@ -30,6 +30,22 @@ type Brand struct {
 	Name string `json:"name"`
 }
 
+type Cart struct {
+	ID        int32        `json:"id"`
+	UserID    uuid.UUID    `json:"user_id"`
+	CreatedAt sql.NullTime `json:"created_at"`
+	UpdatedAt sql.NullTime `json:"updated_at"`
+}
+
+type CartItem struct {
+	ID               int32     `json:"id"`
+	CartID           int32     `json:"cart_id"`
+	ProductVariantID int32     `json:"product_variant_id"`
+	Quantity         int32     `json:"quantity"`
+	CreatedAt        time.Time `json:"created_at"`
+	UpdatedAt        time.Time `json:"updated_at"`
+}
+
 type Category struct {
 	ID   int32  `json:"id"`
 	Name string `json:"name"`

@@ -30,8 +30,14 @@ var (
 	ErrGetProductDetailFailed            AppError = errors.New("failed to get product detail")
 	ErrGetProductDetailConvertParamError AppError = errors.New("get product detail convert param error")
 
+	// carts.
+	ErrAddToCartFailed AppError = errors.New("failed to add to cart")
+
 	// safe type.
 	ErrOverflow AppError = errors.New("value over flow")
+
+	// sql.
+	ErrForeignKeyViolation AppError = errors.New("foreign key violation")
 )
 
 //nolint:err113

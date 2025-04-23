@@ -16,4 +16,8 @@ const (
 	// product.
 	GetProductsSuccess      AppMessage = "get products success"
 	GetProductDetailSuccess AppMessage = "get product detail success"
+
+	// cart.
+	GetCartsSuccess  AppMessage = "get carts success"
+	AddToCartSuccess AppMessage = "add to cart success"
 )

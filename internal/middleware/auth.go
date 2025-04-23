@@ -13,7 +13,7 @@ import (
 const (
 	authorizationHeaderKey  = "authorization"
 	authorizationTypeKey    = "bearer"
-	authorizationPayloadKey = "authorization_payload"
+	AuthorizationPayloadKey = "authorization_payload"
 )
 
 var (
@@ -42,7 +42,8 @@ func JWTAuth(tokenMaker token.TokenMaker) fiber.Handler {
 			slog.Warn("verify token failed", slog.String("error", err.Error()))
 			return response.ErrorJson(c, ErrInvalidToken, fiber.ErrBadRequest.Code)
 		}
-		c.Locals(authorizationPayloadKey, claims)
+
+		c.Locals(AuthorizationPayloadKey, claims)
 
 		return c.Next()
 	}
