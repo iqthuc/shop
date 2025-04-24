@@ -16,9 +16,9 @@ func Bootstrap() {
 	var appConfig *config.AppConfig
 	env := os.Getenv("ENV")
 	if env == "production" {
-		appConfig = loadConfig("configs", "config", "yaml")
+		appConfig = LoadConfig("configs", "config", "yaml")
 	} else {
-		appConfig = loadConfig("configs", "config.dev", "yaml")
+		appConfig = LoadConfig("configs", "config.dev", "yaml")
 	}
 
 	logger.ConfigureLogger(appConfig.Logger)

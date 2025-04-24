@@ -17,3 +17,18 @@ INSERT INTO cart_items(cart_id, product_variant_id, quantity)
 VALUES ($1, $2, $3)
 ON CONFLICT (cart_id, product_variant_id) DO UPDATE
 SET quantity = cart_items.quantity + EXCLUDED.quantity;
+
+-- name: UpdateCartItem :exec
+UPDATE cart_items
+SET quantity = $3
+WHERE product_variant_id = $2
+  AND cart_id = (
+    SELECT id FROM carts WHERE user_id = $1
+  );
+
+-- name: DeleteCartItem :exec
+DELETE FROM cart_items
+WHERE product_variant_id = $2
+AND cart_id = (
+  SELECT id FROM carts WHERE user_id = $1
+);

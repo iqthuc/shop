@@ -10,22 +10,21 @@ type jwtMaker struct {
 	secretKey string
 }
 
-//nolint:ireturn
 func NewJwtMaker(secretKey string) jwtMaker {
 	return jwtMaker{
 		secretKey: secretKey,
 	}
 }
 
-func (maker jwtMaker) CreateToken(userID, role string, tokenRole TokenRole, duration time.Duration) (string, error) {
+func (maker jwtMaker) CreateToken(tkInfo CreateTokenParams) (string, error) {
 	now := time.Now()
 	claims := TokenClaims{
-		UserID:    userID,
-		Role:      role,
-		TokenType: tokenRole,
+		UserID:    tkInfo.UserID,
+		Role:      tkInfo.Role,
+		TokenType: tkInfo.TokenType,
 		StandardClaims: jwt.StandardClaims{
 			IssuedAt:  now.Unix(),
-			ExpiresAt: now.Add(duration).Unix(),
+			ExpiresAt: now.Add(tkInfo.Duration).Unix(),
 		},
 	}
 

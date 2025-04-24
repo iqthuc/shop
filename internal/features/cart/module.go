@@ -18,5 +18,8 @@ func SetupModule(r fiber.Router, s store.Store, v validator.Validate, tk token.T
 	handler := rest.NewCartHandler(useCase, v)
 
 	api := r.Group("/api")
-	api.Post("/carts", middleware.JWTAuth(tk), handler.AddToCart)
+	api.Use(middleware.JWTAuth(tk))
+	api.Post("/carts", handler.AddToCart)
+	api.Patch("/cart/items/:product_variant_id", handler.UpdateCart)
+	api.Delete("/cart/items/:product_variant_id", handler.DeleteCart)
 }

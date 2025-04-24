@@ -18,7 +18,7 @@ func SetupModule(r fiber.Router, s store.Store, v validator.Validate, tk token.T
 	handler := delivery.NewHandler(useCase, v)
 
 	auth := r.Group("/auth")
-	auth.Get("/sign-up", handler.SignUp)
+	auth.Post("/sign-up", handler.SignUp)
 	auth.Get("/login", handler.Login)
 	auth.Get("/refresh-token", middleware.JWTAuth(tk), handler.RefreshToken)
 	auth.Get("/logout", handler.Logout)

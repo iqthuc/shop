@@ -8,7 +8,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-func loadConfig(configPath, configName, configType string) *config.AppConfig {
+func LoadConfig(configPath, configName, configType string) *config.AppConfig {
 	viper := viper.New()
 	viper.AddConfigPath(configPath)
 	viper.SetConfigName(configName)

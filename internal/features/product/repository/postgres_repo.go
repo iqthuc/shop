@@ -3,20 +3,19 @@ package repository
 import (
 	"context"
 	"log/slog"
-	"shop/internal/features/product/core"
 	"shop/internal/features/product/core/dto"
 	"shop/internal/features/product/core/entity"
 	"shop/internal/infrastructure/database/store"
 	"shop/internal/infrastructure/database/store/db"
 	"shop/pkg/utils/errorx"
-	safetype "shop/pkg/utils/safe_type"
+	"shop/pkg/utils/safetype"
 )
 
 type repository struct {
 	store store.Store
 }
 
-func NewProductPostgreRepo(store store.Store) core.ProductRepository {
+func NewProductPostgreRepo(store store.Store) repository {
 	return repository{
 		store: store,
 	}

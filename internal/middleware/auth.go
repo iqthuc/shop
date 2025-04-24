@@ -14,6 +14,7 @@ const (
 	authorizationHeaderKey  = "authorization"
 	authorizationTypeKey    = "bearer"
 	AuthorizationPayloadKey = "authorization_payload"
+	UserIDKey               = "user_id"
 )
 
 var (
@@ -43,7 +44,7 @@ func JWTAuth(tokenMaker token.TokenMaker) fiber.Handler {
 			return response.ErrorJson(c, ErrInvalidToken, fiber.ErrBadRequest.Code)
 		}
 
-		c.Locals(AuthorizationPayloadKey, claims)
+		c.Locals(UserIDKey, claims.UserID)
 
 		return c.Next()
 	}

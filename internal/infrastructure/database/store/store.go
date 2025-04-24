@@ -44,13 +44,16 @@ func (store *PostgresStore) ExecTx(ctx context.Context, opts pgx.TxOptions, fn f
 	if err != nil {
 		return err
 	}
+
 	q := db.New(tx)
 	err = fn(q)
 	if err != nil {
 		if rbErr := tx.Rollback(ctx); rbErr != nil {
 			return rbErr
 		}
+
 		return err
 	}
+
 	return tx.Commit(ctx)
 }

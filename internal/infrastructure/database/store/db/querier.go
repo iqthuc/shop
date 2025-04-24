@@ -13,11 +13,13 @@ import (
 type Querier interface {
 	CheckIfVariantStockSufficient(ctx context.Context, arg CheckIfVariantStockSufficientParams) (ProductVariant, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
+	DeleteCartItem(ctx context.Context, arg DeleteCartItemParams) error
 	GetProductDetails(ctx context.Context, id int32) (GetProductDetailsRow, error)
 	GetProductVariants(ctx context.Context, productID int32) ([]ProductVariant, error)
 	GetProducts(ctx context.Context, arg GetProductsParams) ([]GetProductsRow, error)
 	GetProductsCount(ctx context.Context) (int64, error)
 	GetUserByEmail(ctx context.Context, email string) (User, error)
+	UpdateCartItem(ctx context.Context, arg UpdateCartItemParams) error
 	UpsertCarts(ctx context.Context, userID uuid.UUID) (int32, error)
 	UpsertToCartItems(ctx context.Context, arg UpsertToCartItemsParams) error
 }

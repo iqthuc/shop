@@ -38,6 +38,44 @@ func (q *Queries) CheckIfVariantStockSufficient(ctx context.Context, arg CheckIf
 	return i, err
 }
 
+const deleteCartItem = `-- name: DeleteCartItem :exec
+DELETE FROM cart_items
+WHERE product_variant_id = $2
+AND cart_id = (
+  SELECT id FROM carts WHERE user_id = $1
+)
+`
+
+type DeleteCartItemParams struct {
+	UserID           uuid.UUID `json:"user_id"`
+	ProductVariantID int32     `json:"product_variant_id"`
+}
+
+func (q *Queries) DeleteCartItem(ctx context.Context, arg DeleteCartItemParams) error {
+	_, err := q.db.Exec(ctx, deleteCartItem, arg.UserID, arg.ProductVariantID)
+	return err
+}
+
+const updateCartItem = `-- name: UpdateCartItem :exec
+UPDATE cart_items
+SET quantity = $3
+WHERE product_variant_id = $2
+  AND cart_id = (
+    SELECT id FROM carts WHERE user_id = $1
+  )
+`
+
+type UpdateCartItemParams struct {
+	UserID           uuid.UUID `json:"user_id"`
+	ProductVariantID int32     `json:"product_variant_id"`
+	Quantity         int32     `json:"quantity"`
+}
+
+func (q *Queries) UpdateCartItem(ctx context.Context, arg UpdateCartItemParams) error {
+	_, err := q.db.Exec(ctx, updateCartItem, arg.UserID, arg.ProductVariantID, arg.Quantity)
+	return err
+}
+
 const upsertCarts = `-- name: UpsertCarts :one
 INSERT INTO
     carts (user_id)

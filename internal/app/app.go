@@ -17,8 +17,8 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/logger"
 )
 
-type application struct {
-	server     *server.Server
+type Application struct {
+	Server     *server.Server
 	store      store.Store
 	validator  *validator.Validate
 	tokenMaker token.TokenMaker
@@ -29,30 +29,30 @@ func NewApp(
 	store store.Store,
 	validator *validator.Validate,
 	tokenMaker token.TokenMaker,
-) *application {
-	return &application{
-		server:     server,
+) *Application {
+	return &Application{
+		Server:     server,
 		store:      store,
 		validator:  validator,
 		tokenMaker: tokenMaker,
 	}
 }
 
-func (a *application) run() {
-	a.registerRoutes()
+func (a *Application) RegisterRoutes() {
+	a.Server.Fiber.Use(logger.New())
+	auth.SetupModule(a.Server.Fiber, a.store, *a.validator, a.tokenMaker)
+	product.SetupModule(a.Server.Fiber, a.store, *a.validator)
+	cart.SetupModule(a.Server.Fiber, a.store, *a.validator, a.tokenMaker)
+}
+
+func (a *Application) run() {
+	a.RegisterRoutes()
 	a.startServer() // place the end
 }
 
-func (a *application) registerRoutes() {
-	a.server.Fiber.Use(logger.New())
-	auth.SetupModule(a.server.Fiber, a.store, *a.validator, a.tokenMaker)
-	product.SetupModule(a.server.Fiber, a.store, *a.validator)
-	cart.SetupModule(a.server.Fiber, a.store, *a.validator, a.tokenMaker)
-}
-
-func (a *application) startServer() {
+func (a *Application) startServer() {
 	go func() {
-		a.server.ListenAndServe()
+		a.Server.ListenAndServe()
 	}()
 
 	quit := make(chan os.Signal, 1)
@@ -62,13 +62,13 @@ func (a *application) startServer() {
 	a.cleanup()
 }
 
-func (a *application) cleanup() {
+func (a *Application) cleanup() {
 	// releases resources before the app exits.
 	const serverShutdownTimeout = 5 * time.Second
 	ctx, cancel := context.WithTimeout(context.Background(), serverShutdownTimeout)
 	defer cancel()
 
-	err := a.server.Fiber.ShutdownWithContext(ctx)
+	err := a.Server.Fiber.ShutdownWithContext(ctx)
 	if err != nil {
 		slog.Warn("failed to shutdown server", slog.String("error", err.Error()))
 	}

@@ -62,14 +62,26 @@ func (u useCase) Login(ctx context.Context, input dto.LoginInput) (*dto.LoginRes
 	}
 
 	const accessTokenLifetime = 15 * time.Minute
-	accessToken, err := u.tokenMaker.CreateToken(user.ID.String(), user.Role, token.Access, accessTokenLifetime)
+	accessTokenInfo := token.CreateTokenParams{
+		UserID:    user.ID,
+		Role:      user.Role,
+		TokenType: token.Access,
+		Duration:  accessTokenLifetime,
+	}
+	accessToken, err := u.tokenMaker.CreateToken(accessTokenInfo)
 	if err != nil {
 		slog.Debug("create access token failed", slog.String("error", err.Error()))
 		return nil, err
 	}
 
 	const refreshTokenLifetime = 24 * time.Hour
-	refreshToken, err := u.tokenMaker.CreateToken(user.ID.String(), user.Role, token.Refresh, refreshTokenLifetime)
+	refreshTokenInfo := token.CreateTokenParams{
+		UserID:    user.ID,
+		Role:      user.Role,
+		TokenType: token.Refresh,
+		Duration:  refreshTokenLifetime,
+	}
+	refreshToken, err := u.tokenMaker.CreateToken(refreshTokenInfo)
 	if err != nil {
 		slog.Debug("create access token failed", slog.String("error", err.Error()))
 		return nil, err
@@ -99,7 +111,13 @@ func (u useCase) RefreshToken(ctx context.Context, refreshToken string) (string,
 	}
 
 	const accessTokenLifetime = 15 * time.Minute
-	newAccessToken, err := u.tokenMaker.CreateToken(rfToken.UserID, rfToken.Role, rfToken.TokenType, accessTokenLifetime)
+	accessTokenInfo := token.CreateTokenParams{
+		UserID:    rfToken.UserID,
+		Role:      rfToken.Role,
+		TokenType: token.Access,
+		Duration:  accessTokenLifetime,
+	}
+	newAccessToken, err := u.tokenMaker.CreateToken(accessTokenInfo)
 	if err != nil {
 		slog.Debug("create new access token failed", slog.String("error", err.Error()))
 		return "", err

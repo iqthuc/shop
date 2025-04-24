@@ -11,5 +11,7 @@ var (
 )
 
 type CartRepository interface {
-	AddToCart(ctx context.Context, item dto.AddToCartRequest) error
+	SaveCartItem(ctx context.Context, item dto.AddToCartRequest) error
+	UpdateCart(ctx context.Context, input dto.UpdateCartRequest) error
+	DeleteCartItem(ctx context.Context, input dto.DeleteCartItemRequest) error
 }
