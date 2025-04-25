@@ -7,6 +7,7 @@ import (
 	"os/signal"
 	"shop/internal/features/auth"
 	"shop/internal/features/cart"
+	"shop/internal/features/order"
 	"shop/internal/features/product"
 	"shop/internal/infrastructure/database/store"
 	"shop/internal/infrastructure/server"
@@ -43,6 +44,7 @@ func (a *Application) RegisterRoutes() {
 	auth.SetupModule(a.Server.Fiber, a.store, *a.validator, a.tokenMaker)
 	product.SetupModule(a.Server.Fiber, a.store, *a.validator)
 	cart.SetupModule(a.Server.Fiber, a.store, *a.validator, a.tokenMaker)
+	order.SetupModule(a.Server.Fiber, a.store, *a.validator, a.tokenMaker)
 }
 
 func (a *Application) run() {

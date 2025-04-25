@@ -8,17 +8,26 @@ import (
 	"context"
 
 	"github.com/google/uuid"
+	"github.com/shopspring/decimal"
 )
 
 type Querier interface {
+	CalculateTotalPriceByProductIDs(ctx context.Context, variantIds []int32) (decimal.Decimal, error)
 	CheckIfVariantStockSufficient(ctx context.Context, arg CheckIfVariantStockSufficientParams) (ProductVariant, error)
+	CreateOrder(ctx context.Context, arg CreateOrderParams) (int32, error)
+	CreateOrderItem(ctx context.Context, arg CreateOrderItemParams) error
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
+	DecreaseProductStock(ctx context.Context, arg DecreaseProductStockParams) error
 	DeleteCartItem(ctx context.Context, arg DeleteCartItemParams) error
+	DeleteCartItemsByProductIDs(ctx context.Context, arg DeleteCartItemsByProductIDsParams) error
+	FindOutOfStockItems(ctx context.Context, arg FindOutOfStockItemsParams) ([]FindOutOfStockItemsRow, error)
 	GetProductDetails(ctx context.Context, id int32) (GetProductDetailsRow, error)
 	GetProductVariants(ctx context.Context, productID int32) ([]ProductVariant, error)
 	GetProducts(ctx context.Context, arg GetProductsParams) ([]GetProductsRow, error)
 	GetProductsCount(ctx context.Context) (int64, error)
 	GetUserByEmail(ctx context.Context, email string) (User, error)
+	GetUserCartProducts(ctx context.Context, arg GetUserCartProductsParams) ([]GetUserCartProductsRow, error)
+	LockProductVariantsForUpdate(ctx context.Context, variantIds []int32) ([]int32, error)
 	UpdateCartItem(ctx context.Context, arg UpdateCartItemParams) error
 	UpsertCarts(ctx context.Context, userID uuid.UUID) (int32, error)
 	UpsertToCartItems(ctx context.Context, arg UpsertToCartItemsParams) error

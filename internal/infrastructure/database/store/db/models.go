@@ -6,11 +6,101 @@ package db
 
 import (
 	"database/sql"
+	"database/sql/driver"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 )
+
+type OrderStatus string
+
+const (
+	OrderStatusPending    OrderStatus = "Pending"
+	OrderStatusProcessing OrderStatus = "Processing"
+	OrderStatusShipped    OrderStatus = "Shipped"
+	OrderStatusDelivered  OrderStatus = "Delivered"
+	OrderStatusCancelled  OrderStatus = "Cancelled"
+)
+
+func (e *OrderStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = OrderStatus(s)
+	case string:
+		*e = OrderStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for OrderStatus: %T", src)
+	}
+	return nil
+}
+
+type NullOrderStatus struct {
+	OrderStatus OrderStatus `json:"OrderStatus"`
+	Valid       bool        `json:"valid"` // Valid is true if OrderStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullOrderStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.OrderStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.OrderStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullOrderStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.OrderStatus), nil
+}
+
+type PaymenStatus string
+
+const (
+	PaymenStatusPending PaymenStatus = "Pending"
+	PaymenStatusPaid    PaymenStatus = "Paid"
+	PaymenStatusFailed  PaymenStatus = "Failed"
+)
+
+func (e *PaymenStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = PaymenStatus(s)
+	case string:
+		*e = PaymenStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for PaymenStatus: %T", src)
+	}
+	return nil
+}
+
+type NullPaymenStatus struct {
+	PaymenStatus PaymenStatus `json:"PaymenStatus"`
+	Valid        bool         `json:"valid"` // Valid is true if PaymenStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullPaymenStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.PaymenStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.PaymenStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullPaymenStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.PaymenStatus), nil
+}
 
 type Attribute struct {
 	ID int32 `json:"id"`
@@ -49,6 +139,27 @@ type CartItem struct {
 type Category struct {
 	ID   int32  `json:"id"`
 	Name string `json:"name"`
+}
+
+type Order struct {
+	ID               int32           `json:"id"`
+	UserID           uuid.UUID       `json:"user_id"`
+	ProductVariantID int32           `json:"product_variant_id"`
+	Status           interface{}     `json:"status"`
+	TotalAmount      decimal.Decimal `json:"total_amount"`
+	PaymentStatus    interface{}     `json:"payment_status"`
+	CreatedAt        time.Time       `json:"created_at"`
+	UpdatedAt        time.Time       `json:"updated_at"`
+}
+
+type OrderItem struct {
+	ID               int32       `json:"id"`
+	OrderID          int32       `json:"order_id"`
+	ProductVariantID int32       `json:"product_variant_id"`
+	Quantity         int32       `json:"quantity"`
+	Price            interface{} `json:"price"`
+	CreatedAt        time.Time   `json:"created_at"`
+	UpdatedAt        time.Time   `json:"updated_at"`
 }
 
 type Product struct {
