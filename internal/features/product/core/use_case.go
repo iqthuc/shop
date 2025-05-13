@@ -2,9 +2,14 @@ package core
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"log/slog"
 	"shop/internal/features/product/core/dto"
 	"strings"
+	"time"
+
+	"github.com/redis/go-redis/v9"
 )
 
 type ProductUseCase interface {
@@ -13,17 +18,27 @@ type ProductUseCase interface {
 }
 
 type useCase struct {
-	repo ProductRepository
+	repo  ProductRepository
+	redis *redis.Client
 }
 
-func NewProductUseCase(repo ProductRepository) useCase {
+func NewProductUseCase(repo ProductRepository, redis *redis.Client) useCase {
 	return useCase{
-		repo: repo,
+		repo:  repo,
+		redis: redis,
 	}
 }
 
 func (u useCase) GetProducts(ctx context.Context, input dto.GetProductsRequest) (*dto.GetProductsResult, error) {
 	currentPage := max(input.Page, 1)
+	cacheKey := fmt.Sprintf("products:page=%d", currentPage)
+	cached, err := u.redis.Get(ctx, cacheKey).Result()
+	if err == nil {
+		var result dto.GetProductsResult
+		if err := json.Unmarshal([]byte(cached), &result); err == nil {
+			return &result, nil
+		}
+	}
 	perpage := 15
 	offset := currentPage * perpage
 	sortDirection := strings.ToLower(input.SortBy.Order)
@@ -66,6 +81,12 @@ func (u useCase) GetProducts(ctx context.Context, input dto.GetProductsRequest) 
 			Total:       totalCount,
 			TotalPages:  totalPages,
 		},
+	}
+
+	bytes, err := json.Marshal(products)
+	if err == nil {
+		const productsCacheTTL = 5 * time.Minute
+		u.redis.Set(ctx, cacheKey, bytes, productsCacheTTL)
 	}
 
 	return result, nil

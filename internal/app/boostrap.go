@@ -3,6 +3,7 @@ package app
 import (
 	"log/slog"
 	"os"
+	"shop/internal/infrastructure/cache"
 	"shop/internal/infrastructure/config"
 	"shop/internal/infrastructure/database/store"
 	"shop/internal/infrastructure/logger"
@@ -28,7 +29,7 @@ func Bootstrap() {
 	store := store.NewPostgresStore(appConfig.Database)
 	validator := validator.New()
 	tkMaker := token.NewJwtMaker(appConfig.Token.SecretKey)
-
-	app := NewApp(server, store, validator, tkMaker)
+	redis := cache.NewRedisClient(appConfig.Redis)
+	app := NewApp(server, store, validator, tkMaker, redis)
 	app.run()
 }

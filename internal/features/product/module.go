@@ -8,11 +8,12 @@ import (
 
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
+	"github.com/redis/go-redis/v9"
 )
 
-func SetupModule(r fiber.Router, s store.Store, v validator.Validate) {
+func SetupModule(r fiber.Router, s store.Store, v validator.Validate, redis *redis.Client) {
 	repo := repository.NewProductPostgreRepo(s)
-	useCase := core.NewProductUseCase(repo)
+	useCase := core.NewProductUseCase(repo, redis)
 	handler := rest.NewHandler(useCase, v)
 
 	api := r.Group("/api")

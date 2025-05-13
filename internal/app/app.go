@@ -15,7 +15,9 @@ import (
 	"time"
 
 	"github.com/go-playground/validator/v10"
+	"github.com/gofiber/fiber/v2/middleware/limiter"
 	"github.com/gofiber/fiber/v2/middleware/logger"
+	"github.com/redis/go-redis/v9"
 )
 
 type Application struct {
@@ -23,6 +25,7 @@ type Application struct {
 	store      store.Store
 	validator  *validator.Validate
 	tokenMaker token.TokenMaker
+	redis      *redis.Client
 }
 
 func NewApp(
@@ -30,19 +33,32 @@ func NewApp(
 	store store.Store,
 	validator *validator.Validate,
 	tokenMaker token.TokenMaker,
+	redis *redis.Client,
 ) *Application {
 	return &Application{
 		Server:     server,
 		store:      store,
 		validator:  validator,
 		tokenMaker: tokenMaker,
+		redis:      redis,
 	}
 }
 
 func (a *Application) RegisterRoutes() {
-	a.Server.Fiber.Use(logger.New())
+	const (
+		maxRequestsPerPeriod = 5
+		rateLimitDuration    = 30 * time.Second
+	)
+	a.Server.Fiber.Use(
+		logger.New(),
+		limiter.New(limiter.Config{
+			Max:        maxRequestsPerPeriod,
+			Expiration: rateLimitDuration,
+		}),
+	)
+
 	auth.SetupModule(a.Server.Fiber, a.store, *a.validator, a.tokenMaker)
-	product.SetupModule(a.Server.Fiber, a.store, *a.validator)
+	product.SetupModule(a.Server.Fiber, a.store, *a.validator, a.redis)
 	cart.SetupModule(a.Server.Fiber, a.store, *a.validator, a.tokenMaker)
 	order.SetupModule(a.Server.Fiber, a.store, *a.validator, a.tokenMaker)
 }

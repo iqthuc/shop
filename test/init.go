@@ -2,6 +2,7 @@ package test
 
 import (
 	"shop/internal/app"
+	"shop/internal/infrastructure/cache"
 	"shop/internal/infrastructure/database/store"
 	"shop/internal/infrastructure/server"
 	"shop/pkg/token"
@@ -19,7 +20,7 @@ func init() {
 	store := store.NewPostgresStore(testConfig.Database)
 	validator := validator.New()
 	tkMaker := token.NewJwtMaker(testConfig.Token.SecretKey)
-
-	testApp = app.NewApp(server, store, validator, tkMaker)
+	redis := cache.NewRedisClient(testConfig.Redis)
+	testApp = app.NewApp(server, store, validator, tkMaker, redis)
 	testApp.RegisterRoutes()
 }
